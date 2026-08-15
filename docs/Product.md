@@ -26,6 +26,7 @@ Primary product success measure: students study regularly.
 ## Student Access
 
 - The initial page is the Log In page, which has two sections, one to log in and another to create a Username.
+- During creation, the Username should be limited to 15 characters.
 - A Student accesses the application using only a Username.
 - Entering the same Username provides access to that Student's existing data and Sessions.
 - Username matching is case-sensitive.
@@ -71,7 +72,7 @@ Primary product success measure: students study regularly.
 - Assume that the Subject, Category, Question, and Answer will not be edited or deleted while the Session is in progress, so any such interaction can be ignored.
   - Note that this assumption requires an operational promise from administrators, which has been deemed ok for the first release.
 - An active Session may be abandoned. Any time the Student attempts to Abandon a Session, a confirmation prompt is shown to the Student before the Session is actually abandoned.
-- Abandoning a Session deletes the Session and it will not be retained as history, but abandonment does not delete its Attempts or reverse their effect on Question Accuracy.
+- Abandoning a Session marks the Session as completed. The Session will be retained in the history along with its Attempts and their effect on Question Accuracy.
 
 ## Landing Page
 
@@ -97,7 +98,7 @@ Primary product success measure: students study regularly.
   - A button called **Start Session**.
 
 - If **Ask All Questions** is checked, all other filters on the page should disappear.
-- **Ask All Questions** will default to unchecked.
+- **Ask All Questions** will default to unchecked
 - Subjects to be displayed in alphabetical order.
 - Categories to be displayed in alphabetical order.
 - The Subject will default to the Subject from the Student's last completed Session; if the Student has no completed Sessions, the first Subject in display order is selected by default.
@@ -108,7 +109,7 @@ Primary product success measure: students study regularly.
 - If one or more Categories are selected, only Questions matching the selected Categories will be included in the Session.
 - If no Categories are selected, all Questions in the selected Subject are eligible, including uncategorized Questions.
 - The Student cannot filter specifically for uncategorized Questions.
-- Question Accuracy is `Correct Attempts / Total Attempts` and includes every submitted Guess from all active, completed, and subsequently abandoned Sessions for that Student.
+- Question Accuracy is `Correct Attempts / Total Attempts` and includes every submitted Guess from all active and completed Sessions for that Student.
 - If a Student has never Attempted the Question before, that Question's Accuracy = 0%.
 - Note that `Question Accuracy >= 0%` and `Question Accuracy <= 100%` are logically equivalent to asking all Questions.
 - Category and Accuracy filters may be used together, and when they are used together, the filters use AND logic, e.g. `Category IN (North America, South America) AND Accuracy <= 50%`.
@@ -136,6 +137,7 @@ Primary product success measure: students study regularly.
 
 - Pressing Enter functions the same as clicking **Submit** when the Guess input has focus.
 - An empty Guess is valid.
+- The Guess is limited to 100 characters.
 - The Student's Guess to the previous Question will be highlighted in such a way as to make it obvious as to whether it was correct or not, e.g. being colored green or red.
 - The previous Q&A section is hidden until the Student submits a Guess after opening or resuming the Session page.
 - **Skip for now** does not count as a Guess/Attempt and does not affect the previous Q&A section.
