@@ -21,7 +21,7 @@ The schema is intentionally small and uses ordinary PostgreSQL tables, constrain
 - Use plural table names.
 - Use `integer GENERATED ALWAYS AS IDENTITY` primary keys.
 - Use `text` for user-entered and administrator-entered text unless a real database limit is required.
-- Use `timestamptz` for timestamps and store times in UTC.
+- Use `timestamptz` for timestamps. Configure application/database sessions to use UTC.
 - Use `created_at` for creation time and specific timestamps such as `completed_at` where they represent a product event.
 - Let PostgreSQL generate identifiers and timestamps.
 - Do not use PostgreSQL enums initially; small `text` or `char` fields with check constraints are easier to change through ordinary SQL migrations.
@@ -36,8 +36,6 @@ students 1 ---- * sessions * ---- 1 subjects
            session_questions * ---- 1 questions * ---- 1 subjects
                                                      |
                                                      0..1 categories
-
-sessions * ---- * categories
 ```
 
 Important details:
@@ -123,7 +121,7 @@ Normalized Answer values are not stored. Guess normalization and Damerau-Levensh
 
 ### `sessions`
 
-Stores active and completed Sessions. Abandoned Sessions are deleted.
+Stores active and completed Sessions. Abandoned Sessions are retained and marked complete.
 
 | Column | Type | Null | Purpose |
 | --- | --- | --- | --- |
@@ -131,7 +129,7 @@ Stores active and completed Sessions. Abandoned Sessions are deleted.
 | `student_id` | `integer` | No | Student who owns the Session. |
 | `subject_id` | `integer` | No | Session Subject. |
 | `created_at` | `timestamptz` | No | Session creation time. |
-| `completed_at` | `timestamptz` | Yes | Completion time. |
+| `completed_at` | `timestamptz` | Yes | Completion time. Use ` |
 
 Constraints:
 
@@ -151,11 +149,12 @@ Stores the fixed Question membership of a Session and whether each Question has 
 | --- | --- | --- | --- |
 | `session_id` | `integer` | No | Owning Session. |
 | `question_id` | `integer` | No | Question included in the Session. |
-| `attempts` | `integer` | No | Number of Attempts submitted for this Question in this Session. |
+| `attempts` | `integer` | No | Number of Attempts submitted for this Question in this Session. Use `DEFAULT 0`. |
 | `completed_at` | `timestamptz` | Yes | Time of the first correct Attempt in this Session. |
 
 Constraints:
 
+- Add `CHECK (attempts >= 0)`.
 - Composite primary key on `(session_id, question_id)`.
 - Foreign key from `session_id` to `sessions(id)`.
 - Foreign key from `question_id` to `questions(id)`.
@@ -172,11 +171,11 @@ Derive Accuracy from session_questions rather than storing a second authoritativ
 
 Accuracy is derived from `session_questions` and `sessions` for one Student and one Question:
 
-If `total_attempts` is zero, Product.md defines Accuracy as 0%.
+Any time `attempts` is zero, a divide by zero would occur, so instead Accuracy should be defined as 0% for these cases.
 
 When filtering many Questions for Session creation, aggregate Attempts once for the Student and left join the result to eligible Questions. Do not execute one Accuracy query per Question.
 
-Do not store an Accuracy percentage column initially. Stored totals would duplicate authoritative Attempt data and require additional update logic.
+Do not store an Accuracy percentage column initially. Stored totals would duplicate the authoritative attempt counts in session_questions and require additional update logic.
 
 ### Current Round
 
@@ -210,8 +209,10 @@ Refreshing or reopening the page may select a different pending Question.
 For a completed Session:
 
 - Unique Questions = number of `session_questions` rows.
-- Guesses = number of `attempts` rows whose `session_id` is the Session.
-- Session Accuracy = Unique Questions / Guesses × 100, rounded by application code to the nearest integer.
+- Guesses = sum of session_questions.attempts for the Session.
+- Session Accuracy = Unique Questions / Guesses × 100
+
+For abandoned Sessions, Session Accuracy is not shown. Thus, cases where no Gueses were made or there are more Unique Questions than Guesses are safely ignored.
 
 ## Transactions
 
@@ -239,7 +240,7 @@ The five-active-Session limit is handled solely in code. If a race condition exi
 
 Use one transaction to:
 
-1. Increment `session_questions.attempts`.
+1. Increment `session_questions.attempts` if `session_questions.completed_at` is NULL (this conditional is solely to catch rare concurrency issues).
 2. If correct, set `session_questions.completed_at` if it is still `NULL`.
 3. If all Session Questions are complete, set `sessions.completed_at` if it is still `NULL`.
 4. Commit.
@@ -256,6 +257,8 @@ If exact current-Question persistence is later required, skipping will become a 
 
 After the Student confirms abandonment, mark the active Session as complete by setting `sessions.completed_at`.
 
+Whether a completed Session was completed normally or abandoned can be derived from its session_questions: if any Question remains incomplete, the Session was abandoned.
+
 ## Indexes
 
 Primary keys, unique constraints, and the supporting unique constraint on `categories(subject_id, id)` create their own indexes.
@@ -265,23 +268,26 @@ Create these additional indexes initially:
 ```sql
 CREATE INDEX questions_subject_category_idx
   ON questions (subject_id, category_id);
-
-CREATE INDEX session_questions_session_idx
-  ON session_questions (session_id);
+  
+CREATE INDEX sessions_student_completed_idx
+  ON sessions (student_id, completed_at);
+  
+CREATE INDEX session_questions_question_idx
+  ON session_questions (question_id);
 ```
 
 Do not add indexes speculatively beyond the known access patterns. Review actual queries with `EXPLAIN` if performance becomes a problem.
 
 ## Deletion and Update Rules
 
-The initial release relies on the Administrator's operational promise not to edit or delete Subjects, Categories, Questions, or Answers while affected Sessions are active.
+The initial release relies on the Administrator's operational promise not to edit or delete Subjects, Categories, or Questions while affected Sessions are active.
 
 Recommended foreign-key deletion behavior:
 
 - `students`: restrict deletion while Sessions exist.
 - `subjects`: restrict deletion while Categories, Questions, or Sessions exist.
-- `categories`: restrict deletion while Questions or Session filter records exist.
-- `questions`: restrict deletion while Session membership exist.
+- `categories`: restrict deletion while Questions exist.
+- `questions`: restrict deletion while `session_questions` rows exist.
 
 The application should not silently cascade deletion of historical learning data.
 
