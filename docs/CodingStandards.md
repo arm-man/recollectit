@@ -145,7 +145,7 @@ Use `pg` and direct, parameterized PostgreSQL SQL.
 - Use a transaction when multiple statements must succeed or fail together, and execute all of its statements through the same database client.
 - Keep transactions short and release checked-out clients in a `finally` block.
 
-Store numbered SQL migrations under `database/`, such as `003_add_session_completed_at.sql`. Apply them in order. After a migration has been applied to production, correct it with a new migration rather than editing it.
+Store numbered SQL files under `database/`. Name every SQL file `<number>_migration_<description>.sql` or `<number>_seed_<description>.sql`, such as `003_migration_add_session_completed_at.sql` or `004_seed_world_capitals.sql`. Apply migrations in order. After a migration has been applied to production, correct it with a new migration rather than editing it.
 
 ## Errors, Logging, and Security
 

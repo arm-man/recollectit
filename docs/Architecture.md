@@ -222,10 +222,13 @@ Example:
 ```text
 database/
   001_migration_initial.sql
-  002_example_change.sql
+  002_seed_world_capitals.sql
+  003_migration_example_change.sql
 ```
 
 For the initial release, migration SQL may be applied manually to Neon.
+
+Every `.sql` filename must begin with its numeric sequence followed by either `migration` or `seed`, using the format `<number>_migration_<description>.sql` or `<number>_seed_<description>.sql`.
 
 A dedicated migration framework is not required.
 

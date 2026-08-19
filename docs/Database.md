@@ -318,11 +318,15 @@ The migration should create tables in dependency order:
 
 Migration files are ordinary SQL, are committed to source control, and are applied in numeric order. After a migration has been applied to production, do not edit it; create a new numbered migration for corrections.
 
+Every `.sql` filename must begin with its numeric sequence followed by either `migration` or `seed`, using the format `<number>_migration_<description>.sql` or `<number>_seed_<description>.sql`.
+
 Apply and verify every migration against the development Neon database before applying it to production.
 
 ## Seed Data
 
 Initial Subjects, Categories, and Questions may be inserted directly through Neon.
+
+Seed SQL files must use the `<number>_seed_<description>.sql` filename format, for example `002_seed_world_capitals.sql`.
 
 ## Manual Database Smoke Tests
 
