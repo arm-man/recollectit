@@ -123,7 +123,7 @@ Unexpected errors return:
 }
 ```
 
-The server should log the underlying unexpected error without returning its details to the browser.
+The server should write the underlying unexpected error to the `logs` table without returning its details to the browser.
 
 ### Common Error Status Codes
 

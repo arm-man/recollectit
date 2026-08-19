@@ -164,6 +164,18 @@ A Question is incomplete when `completed_at IS NULL`. A correct Guess sets `comp
 
 Derive Accuracy from session_questions rather than storing a second authoritative copy.
 
+### `logs`
+
+Stores server-side error and warning messages for operational troubleshooting.
+
+| Column | Type | Null | Purpose |
+| --- | --- | --- | --- |
+| `severity` | `text` | No | Log severity. Use `DEFAULT 'error'`; warnings use `warning`. |
+| `message` | `text` | No | Non-sensitive error or warning details. |
+| `created_at` | `timestamptz` | No | Log creation time. Use `DEFAULT NOW()`. |
+
+The application must not store credentials, connection strings, or other secrets in log messages.
+
 ## Derived Data and Queries
 
 ### Question Accuracy
@@ -290,7 +302,7 @@ The application should not silently cascade deletion of historical learning data
 Create the schema in:
 
 ```text
-database/migrations/001_initial.sql
+database/001_migration_initial.sql
 ```
 
 The migration should create tables in dependency order:
@@ -301,7 +313,8 @@ The migration should create tables in dependency order:
 4. `questions`
 5. `sessions`
 6. `session_questions`
-7. Additional indexes
+7. `logs`
+8. Additional indexes
 
 Migration files are ordinary SQL, are committed to source control, and are applied in numeric order. After a migration has been applied to production, do not edit it; create a new numbered migration for corrections.
 

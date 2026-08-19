@@ -145,15 +145,16 @@ Use `pg` and direct, parameterized PostgreSQL SQL.
 - Use a transaction when multiple statements must succeed or fail together, and execute all of its statements through the same database client.
 - Keep transactions short and release checked-out clients in a `finally` block.
 
-Store numbered SQL migrations under `database/migrations/`, such as `003_add_session_completed_at.sql`. Apply them in order. After a migration has been applied to production, correct it with a new migration rather than editing it.
+Store numbered SQL migrations under `database/`, such as `003_add_session_completed_at.sql`. Apply them in order. After a migration has been applied to production, correct it with a new migration rather than editing it.
 
 ## Errors, Logging, and Security
 
 - Handle expected conditions, such as invalid input, with controlled application errors.
-- Log unexpected failures on the server with enough non-sensitive context to diagnose them.
+- Write unexpected server failures to the `logs` table with the default `error` severity and enough non-sensitive context to diagnose them.
+- Write operational warnings to the `logs` table with severity `warning`.
 - Return a generic error to the browser for unexpected failures.
 - Do not swallow exceptions or log the same failure at several layers.
-- Do not add a separate logging or monitoring system for the initial release.
+- Do not add another logging or monitoring system for the initial release.
 - Store secrets and environment-specific settings in environment variables.
 - Do not commit `.env.local`, credentials, connection strings, tokens, or production data.
 - Never put secrets in variables prefixed with `NEXT_PUBLIC_`.

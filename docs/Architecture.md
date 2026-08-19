@@ -116,7 +116,7 @@ src/
 	...
 
 database/
-  migrations/
+  001_migration_initial.sql
 
 docs/
   Product.md
@@ -209,6 +209,7 @@ The database will persist the product concepts that require durable state, inclu
 * Questions and Answers.
 * Sessions and their Questions.
 * Session Question attempt counts.
+* Server-side error and warning logs.
 
 Do not duplicate detailed table definitions in this document.
 
@@ -220,9 +221,8 @@ Example:
 
 ```text
 database/
-  migrations/
-    001_initial.sql
-    002_example_change.sql
+  001_migration_initial.sql
+  002_example_change.sql
 ```
 
 For the initial release, migration SQL may be applied manually to Neon.
@@ -384,15 +384,15 @@ Examples include:
 * The Student has reached the active-Session limit.
 * A Question cannot currently be skipped.
 
-Unexpected server errors should be logged without exposing database credentials, SQL internals, or stack traces to Students.
+Unexpected server errors should be written to the `logs` table without exposing database credentials, SQL internals, or stack traces to Students.
 
 Do not create a custom error-handling framework unless one becomes useful.
 
 ## Logging and Monitoring
 
-Use the logging provided by the application and hosting platform for the initial release.
+Write server-side errors and operational warnings to the PostgreSQL `logs` table. Errors use the default `error` severity; warnings use severity `warning`. Log messages must not contain credentials, connection strings, or other secrets.
 
-Do not introduce a dedicated logging, monitoring, tracing, or observability service initially.
+Do not introduce another logging, monitoring, tracing, or observability service initially.
 
 Add one only if troubleshooting actual production use demonstrates a need.
 
