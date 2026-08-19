@@ -15,7 +15,7 @@ Primary product success measure: students study regularly.
 - **Question**: a prompt presented to the Student.
 - **Answer**: the correct answer to the Question.
 - **Guess**: the Student's submitted answer to a Question.
-- **Attempt**: the submission of one Guess for a Question. While similar to Guess, an Attempt includes the Guess along with other potential info such as timestamp, whether the Guess was correct, etc.
+- **Attempt**: one submitted Guess for a Question. Attempts are counted, but individual Guesses and Attempt details are not retained.
 - **Subject**: a topic containing Questions, e.g. `World Capitals`.
 - **Category**: A subtopic within a Subject, e.g. `Europe`.
 - **Session**: a fixed set of Questions from one Subject that continues until every Question has been answered correctly.
@@ -72,14 +72,14 @@ Primary product success measure: students study regularly.
 - Assume that the Subject, Category, Question, and Answer will not be edited or deleted while the Session is in progress, so any such interaction can be ignored.
   - Note that this assumption requires an operational promise from administrators, which has been deemed ok for the first release.
 - An active Session may be abandoned. Any time the Student attempts to Abandon a Session, a confirmation prompt is shown to the Student before the Session is actually abandoned.
-- Abandoning a Session marks the Session as completed. The Session will be retained in the history along with its Attempts and their effect on Question Accuracy.
+- Abandoning a Session marks the Session as completed. The Session is retained in history along with its accumulated Attempt counts and their effect on Question Accuracy. Individual Guesses are not retained.
 
 ## Landing Page
 
 - After a Student logs in with their Username, the Student is presented with:
   - A section that lists all active Sessions, along with a "Resume" button and "Abandon" button next to each active Session.
     - For each active Session, show the Subject and creation date.
-	- If there are no active Sessions, this section will not be shown.
+    - If there are no active Sessions, this section will not be shown.
   - A highlighted section with a single button to create a new Session.
   - A section that lists historical Sessions, in order of most recently completed first.
     - If there are no historical Sessions, this section will not be shown.
@@ -96,12 +96,13 @@ Primary product success measure: students study regularly.
     - Implementation details can be altered as long as the spirit of the feature is maintained.
     - Example: If Question Accuracy <= 40% is selected, only Questions with an Accuracy of 40% or less are included.
   - A button called **Start Session**.
+  - Filter changes should call the API endpoint immediately.
 
 - If **Ask All Questions** is checked, all other filters on the page should disappear.
 - **Ask All Questions** will default to unchecked
 - Subjects to be displayed in alphabetical order.
 - Categories to be displayed in alphabetical order.
-- The Subject will default to the Subject from the Student's last completed Session; if the Student has no completed Sessions, the first Subject in display order is selected by default.
+- The Subject will default to the Subject from the Student's last completed Session (including abandoned Sessions); if the Student has no completed Sessions, the first Subject in display order is selected by default.
 - No Categories are selected by default.
 - The Category list box user experience should be designed so it is easy to de-select a Category, including de-selecting a Category so there are zero selected.
 - X will default to `<=`.
@@ -118,22 +119,21 @@ Primary product success measure: students study regularly.
 ## Session
 
 - The Session page will have the following content:
-  - A section showing the filters used:
+  - A section showing info about the Session:
     - The Subject
     - The Categories, if applicable
-    - The Question Accuracy with the greater than or less than sign and percentage, if applicable
   - The Round number along with the question number out of the total questions for the current round, e.g. `Round 1 : Question 5 of 20`
-	- The numerator (i.e. the 5 in the label `Question 5 of 20`) represents the number of Questions Attempted in the current Round plus one. Skipping does not advance it. Therefore, the replacement Question displays the same numerator as the skipped Question.
+    - The numerator (i.e. the 5 in the label `Question 5 of 20`) represents the number of Questions Attempted in the current Round plus one. Skipping does not advance it. Therefore, the replacement Question displays the same numerator as the skipped Question.
     - The denominator (i.e. the 20 in the label `Question 5 of 20`) is the Round question count which is fixed when the Round begins. In this example, there will be 20 Attempts scheduled for the Round.
   - A section for the Q&A:
     - The Question
-	- An area to display the Guess as it is typed
-	- A **Skip for now** button
-	- A **Submit** button
+    - An area to display the Guess as it is typed
+    - A **Skip for now** button
+    - A **Submit** button
   - A section showing the previous Q&A:
-	- The previous Question
-	- The previous Answer
-	- The previous Guess
+    - The previous Question
+    - The previous Answer
+    - The previous Guess
 
 - Pressing Enter functions the same as clicking **Submit** when the Guess input has focus.
 - An empty Guess is valid.
@@ -143,6 +143,7 @@ Primary product success measure: students study regularly.
 - **Skip for now** does not count as a Guess/Attempt and does not affect the previous Q&A section.
 - A skipped Question remains pending in the current Round, and a different pending Question is selected randomly. The skipped Question must be presented and Attempted later before the Round can end.
 - If the current Question is the only pending Question to be asked in the Round, the **Skip for now** button will show an error message.
+- For errors returned by the server, show a short message and attempt to reload the state and display a valid Question.
 
 ## Question Ordering and Rounds
 
@@ -151,7 +152,7 @@ Primary product success measure: students study regularly.
 - Round 2 requires one Attempt for every Question still incomplete before any incomplete Question receives another Attempt.
 - The same rule applies to subsequent Rounds.
 - A Question answered correctly is excluded from all later Rounds in that Session.
-- A Question must not be asked twice in a row unless it is the only incomplete Question remaining in the Session.
+- After a Guess, the same Question must not be asked twice in a row unless it is the only incomplete Question remaining in the Session.
 
 ## Guess Evaluation
 
@@ -180,6 +181,13 @@ For each Student: `Question Accuracy = Correct Attempts / Total Attempts`
 - Correct and incorrect Attempts update the Question's historical Accuracy.
 - Attempts in any Session affect future Session filtering for that Student.
 - Changes to Question Accuracy do not alter the Questions to be asked of Sessions that have already started.
+
+For one Student and Question:
+
+- Total Attempts = the sum of session_questions.attempts.
+- Correct Attempts = the number of those rows whose completed_at is not NULL.
+- Question Accuracy = Correct Attempts / Total Attempts.
+- If Total Attempts is zero, Accuracy is 0%.
 
 ## Session Completion
 

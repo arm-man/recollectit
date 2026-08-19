@@ -408,7 +408,7 @@ Expected errors:
 POST /api/sessions/{sessionId}/skip
 ```
 
-Validates a skip and returns a different pending Question. Skipping does not create an Attempt or change durable product history.
+Validates a skip and returns a different pending Question if one exists. Skipping does not update the database nor change durable product history.
 
 Request:
 
@@ -436,7 +436,7 @@ Success response — `200 OK`:
 
 The response does not include or change `previous` state. The browser continues displaying the previous Q&A, if any, from its existing local state.
 
-The returned Question must be pending in the current Round and different from the submitted Question.
+The returned Question must be pending in the current Round and different from the submitted Question if there is more than one pending Question for the Round.
 
 Expected errors:
 
@@ -508,10 +508,12 @@ Success response when the Guess completes the Session — `200 OK`:
   },
   "summary": {
     "uniqueQuestionCount": 20,
-    "guessCount": 25,
+    "guessCount": 25
   }
 }
 ```
+
+The Resonse questionId shall be different from the Request questionId, if possible. The only time it is not possible is if there is only one questionId in the Session that has not been completed.
 
 Expected errors:
 

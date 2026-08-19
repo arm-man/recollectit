@@ -153,7 +153,7 @@ Each Route Handler should:
 
 1. Validate the request on the server.
 2. Call a server-side business function, which coordinates product rules and calls database functions as needed.
-3. Return an explicit HTTP status and a small JSON response.
+3. Return an explicit HTTP status and, when the browser needs data, a small JSON response.
 
 The architecture should have a lightweight separation: Route Handler → business function → database function → PostgreSQL.
 
@@ -208,7 +208,7 @@ The database will persist the product concepts that require durable state, inclu
 * Categories.
 * Questions and Answers.
 * Sessions and their Questions.
-* Attempts.
+* Session Question attempt counts.
 
 Do not duplicate detailed table definitions in this document.
 
@@ -254,7 +254,7 @@ The initial release intentionally does not provide secure Student authentication
 
 Students identify themselves using the Username rules defined in `Product.md`.
 
-The application may store the current Student identifier in a browser cookie so the Student does not need to re-enter it during ordinary navigation.
+The application stores the current Student identifier in a browser cookie so the Student does not need to re-enter it during ordinary navigation.
 
 The current-Student cookie should be set by the server and use `HttpOnly`, `SameSite=Lax`, and `Secure` in production. It must not be treated as proof of authenticated identity.
 
@@ -319,6 +319,11 @@ Do not introduce distributed locking or other specialized concurrency infrastruc
 Use normal PostgreSQL constraints and transactions where correctness requires them.
 
 More sophisticated concurrency controls should be added only if actual usage demonstrates a problem.
+
+- Student creation relies on the database unique constraint to resolve concurrent duplicate Username creation.
+- Session creation recalculates eligibility and active Session count on the server. The known rare race that could create a sixth active Session is acceptable under `Database.md`.
+- The browser should disable an action button while its request is pending to reduce accidental duplicate requests.
+- No idempotency-key framework is required initially.
 
 ## Guess Evaluation
 
@@ -409,7 +414,7 @@ Initial unit tests should focus on the most consequential pure logic, especially
 
 ### Database and Workflow Testing
 
-For the initial release, verify the principal database workflows using a short, repeatable manual smoke-test checklist. This should include Student creation, Session creation, Attempt recording, Session abandonment, and Session completion.
+For the initial release, verify the principal database workflows using a short, repeatable manual smoke-test checklist. This should include Student creation, Session creation, Guess processing, Session abandonment, and Session completion.
 
 Add automated database tests when regressions or increasing development activity justify their setup and maintenance.
 

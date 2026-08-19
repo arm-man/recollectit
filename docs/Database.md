@@ -52,7 +52,7 @@ Stores one row for each Student.
 | --- | --- | --- | --- |
 | `id` | `integer` identity | No | Primary key. |
 | `username` | `text` | No | NFC-normalized, case-sensitive Username. |
-| `created_at` | `timestamptz` | No | Student creation time. |
+| `created_at` | `timestamptz` | No | Student creation time. Use DEFAULT NOW().|
 
 Constraints:
 
@@ -71,7 +71,6 @@ Stores the shared Subjects maintained by the Administrator.
 | --- | --- | --- | --- |
 | `id` | `integer` identity | No | Primary key. |
 | `title` | `text` | No | Subject title shown to Students. |
-| `created_at` | `timestamptz` | No | Creation time. |
 
 Constraints:
 
@@ -128,8 +127,8 @@ Stores active and completed Sessions. Abandoned Sessions are retained and marked
 | `id` | `integer` identity | No | Primary key. |
 | `student_id` | `integer` | No | Student who owns the Session. |
 | `subject_id` | `integer` | No | Session Subject. |
-| `created_at` | `timestamptz` | No | Session creation time. |
-| `completed_at` | `timestamptz` | Yes | Completion time. Use ` |
+| `created_at` | `timestamptz` | No | Session creation time. Use DEFAULT NOW(). |
+| `completed_at` | `timestamptz` | Yes | Completion or abandonment time. NULL while the Session is active. ` |
 
 Constraints:
 
@@ -181,7 +180,7 @@ Do not store an Accuracy percentage column initially. Stored totals would duplic
 
 Assume that all references to `session_questions` below are limited to the Questions belonging to the Session.
 
-For an active Session, a Question is pending in the current Round when its `session_questions.completed_at` is NULL.
+For an active Session, a Question is incomplete when completed_at IS NULL. It is eligible to be asked in the current Round only when it is incomplete and has the minimum attempts value among all incomplete Questions in the Session.
 
 The current Round is derived from `session_questions.attempts`, `session_questions.completed_at`, and `sessions.completed_at`. The current Round is not stored separately.
 
@@ -196,13 +195,11 @@ This design does not require a separate Round table.
 
 ### Current and Previous Question State
 
-The database does not initially store a `current_question_id` on the Session. The server selects a random pending Question when it needs to present one, excluding the immediately previous attempted Question when the product rule requires it.
+The database does not store a `current_question_id` on the Session. The server selects a random pending Question when it needs to present one.
 
 The previous Q&A panel is browser-visit state and is intentionally hidden after the page is opened or resumed, so it does not require a durable database field.
 
 A skipped Question remains pending because skipping writes no Attempt. The server can choose another pending Question for the response.
-
-Refreshing or reopening the page may select a different pending Question.
 
 ### Session Completion Summary
 
@@ -212,7 +209,7 @@ For a completed Session:
 - Guesses = sum of session_questions.attempts for the Session.
 - Session Accuracy = Unique Questions / Guesses × 100
 
-For abandoned Sessions, Session Accuracy is not shown. Thus, cases where no Gueses were made or there are more Unique Questions than Guesses are safely ignored.
+For abandoned Sessions, Session Accuracy is not shown. Thus, cases where no Guesses were made or there are more Unique Questions than Guesses are safely ignored.
 
 ## Transactions
 
@@ -224,11 +221,10 @@ A single insert is sufficient. The unique Username constraint handles concurrent
 
 Use one transaction to:
 
-1. Lock or otherwise serialize Session creation for the Student.
-2. Select the eligible Questions using the submitted filters and historical Accuracy.
-3. Insert the `sessions` row.
-4. Insert every `session_questions` row.
-5. Commit.
+1. Select the eligible Questions using the submitted filters and historical Accuracy.
+2. Insert the `sessions` row.
+3. Insert every `session_questions` row.
+4. Commit.
 
 The Question set is fixed by the inserted rows and must not be regenerated later.
 
@@ -250,8 +246,6 @@ Guess evaluation occurs before the transaction begins. The Answer may be read as
 ### Skip Question
 
 Skipping does not change durable product history and does not require an insert. The server validates that another Question is pending in the current Round, selects a replacement, and returns it.
-
-If exact current-Question persistence is later required, skipping will become a small Session update.
 
 ### Abandon Session
 
@@ -323,9 +317,9 @@ Before the initial release, verify at least the following against the developmen
 
 1. Create two distinct case-sensitive Usernames and reject an exact duplicate.
 2. Start a Session and confirm its Question membership remains fixed.
-3. Record an incorrect Attempt and confirm it affects Question Accuracy.
-4. Record a correct Attempt and confirm the Session Question becomes complete.
+3. Submit an incorrect Guess and confirm that session_questions.attempts increases by 1 and the Question remains incomplete.
+4. Submit a correct Guess and confirm that session_questions.attempts increases by 1 and completed_at is set.
 5. Complete a Round and confirm the next Round begins with only incomplete Questions.
 6. Complete the final Question and confirm the Session and completion timestamp update atomically.
-7. Confirm a skipped Question creates no Attempt and remains pending.
+7. Confirm a skipped Question does not change session_questions.attempts and the Question remains pending.
 8. Confirm database constraints reject invalid foreign keys.
