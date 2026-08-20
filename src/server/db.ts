@@ -9,3 +9,11 @@ if (!connectionString) {
 }
 
 export const pool: Pool = new Pool({ connectionString });
+
+export async function getDatabaseTime(): Promise<Date> {
+  const result = await pool.query<{ currentTime: Date }>(
+    'SELECT NOW() AS "currentTime"',
+  );
+
+  return result.rows[0].currentTime;
+}
