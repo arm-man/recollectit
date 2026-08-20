@@ -26,9 +26,9 @@ Primary product success measure: students study regularly.
 ## Student Access
 
 - The initial page is the Log In page, which has two sections, one to log in and another to create a Username.
-- During creation, the Username should be limited to 15 characters.
+- During creation, the Username should be limited to 25 characters.
 - A Student accesses the application using only a Username.
-- Entering the same Username provides access to that Student's existing data and Sessions.
+- Logging in with a valid Username provides access to that Student's existing data and Sessions.
 - Username matching is case-sensitive.
 - Usernames may contain printable Unicode characters, including symbols, diacritics, and non-Latin characters.
 - Usernames may not contain whitespace, control characters, or invisible formatting characters.

@@ -250,7 +250,7 @@ Server behavior:
 
 1. Require `username` to be a string.
 2. Normalize it to Unicode NFC.
-3. Validate the Username rules and 15-character product limit.
+3. Validate the Username rules and 25-character product limit.
 4. Insert the Student.
 5. Set the current-Student cookie after a successful insert.
 
