@@ -249,10 +249,11 @@ Request:
 Server behavior:
 
 1. Require `username` to be a string.
-2. Normalize it to Unicode NFC.
-3. Validate the Username rules and 25-character product limit.
-4. Insert the Student.
-5. Set the current-Student cookie after a successful insert.
+2. Trim leading and trailing whitespace.
+3. Normalize it to Unicode NFC.
+4. Validate the Username rules and 25-character product limit.
+5. Insert the Student.
+6. Set the current-Student cookie after a successful insert.
 
 Success response — `201 Created` (no response body).
 

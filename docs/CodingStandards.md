@@ -24,6 +24,7 @@ If these documents conflict, follow the document responsible for the decision an
 - Follow the basic flow in `Architecture.md`: Route Handler → business function → database function → PostgreSQL.
 - Do not add a framework, architectural layer, or dependency unless it solves a current problem.
 - Optimize for clarity and correctness, not high scale. The initial application does not need to support thousands of simultaneous users.
+- Add comments to the code especially to help explain why the code was written, not just what it does. Add strong explanatory comments where the code performs something non-obvious.
 
 ## TypeScript
 

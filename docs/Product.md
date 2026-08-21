@@ -77,12 +77,15 @@ Primary product success measure: students study regularly.
 ## Landing Page
 
 - After a Student logs in with their Username, the Student is presented with:
+  - The Recollect It wordmark in the upper left.
+  - The Student's Username.
+  - A highlighted section with a single button to create a new Session.
   - A section that lists all active Sessions, along with a "Resume" button and "Abandon" button next to each active Session.
     - For each active Session, show the Subject and creation date.
-    - If there are no active Sessions, this section will not be shown.
-  - A highlighted section with a single button to create a new Session.
+    - If there are no active Sessions, this section will simply show a note saying "No active sessions.".
   - A section that lists historical Sessions, in order of most recently completed first.
-    - If there are no historical Sessions, this section will not be shown.
+    - For each historical session, show the Subject, completion date, and Session Accuracy.
+    - If there are no historical Sessions, this section will simply show a note saying "No completed sessions.".
 
 ## Session Creation
 

@@ -261,6 +261,8 @@ The application stores the current Student identifier in a browser cookie so the
 
 The current-Student cookie should be set by the server and use `HttpOnly`, `SameSite=Lax`, and `Secure` in production. It must not be treated as proof of authenticated identity.
 
+The application recognizes a current Student only when the cookie contains a valid Student ID that resolves to an existing `students` row. The Student Access page at `/` redirects a recognized Student to `/landing`; `/landing` redirects a visitor without a recognized Student back to `/`.
+
 Because anyone who knows another Student's Username can already access that Student's account, the cookie is a convenience mechanism rather than an authentication credential.
 
 Do not introduce an authentication framework for the initial release.
