@@ -166,12 +166,12 @@ Derive Accuracy from session_questions rather than storing a second authoritativ
 
 ### `logs`
 
-Stores server-side error and warning messages for operational troubleshooting.
+Stores server-side error, warning, and informational messages for operational troubleshooting.
 
 | Column | Type | Null | Purpose |
 | --- | --- | --- | --- |
-| `severity` | `text` | No | Log severity. Use `DEFAULT 'error'`; warnings use `warning`. |
-| `message` | `text` | No | Non-sensitive error or warning details. |
+| `severity` | `text` | No | Log severity. Use `DEFAULT 'error'`; warnings use `warning`; informational actions use `info`. |
+| `message` | `text` | No | Non-sensitive log details. |
 | `created_at` | `timestamptz` | No | Log creation time. Use `DEFAULT NOW()`. |
 
 The application must not store credentials, connection strings, or other secrets in log messages.

@@ -265,6 +265,7 @@ Expected errors:
 | `409` | `USERNAME_ALREADY_EXISTS` | The exact normalized Username already exists. |
 
 Concurrent duplicate inserts are resolved by the database unique constraint and mapped to `USERNAME_ALREADY_EXISTS`.
+Every `USERNAME_ALREADY_EXISTS` response writes an `info` entry to the `logs` table containing the normalized Username.
 
 ### Preview Session Question Count
 
