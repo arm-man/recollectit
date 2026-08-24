@@ -9,7 +9,7 @@
 ## Template
 
 Please create an AI prompt that I can provide to Codex to implement the change: <summarize the change in one sentence>.
-To create the best prompt, ask me relevant questions. Do not create the prompt until you receive answers from me to all of your questions.
+To create the best prompt, ask me relevant questions. Do not create the prompt until you receive answers to all of your questions.
 
 In the prompt, create the Section: `Before making changes`, which, at a minimum, will include:
 - Read and follow AIInstructions.md.
@@ -27,19 +27,19 @@ In the prompt, create a Section: `After making the change`, which, at a minimum,
 
 ## After Prompt Creation
 
-Add this to the AI-generated prompt before giving it to Codex: "If an important requirement remains ambiguous after reviewing the project documentation and existing implementation, ask me before making that decision. Otherwise, proceed without asking unnecessary questions."
+Add this to the AI-generated prompt before giving it to Codex: "If an important requirement remains ambiguous after reviewing the project documentation and existing implementation, ask me before making that decision. Do not start work until you receive answers to all of your questions. If everything is clear, proceed without asking unnecessary questions."
 
 ## After AI Code Changes
 
 1. Review the AI summary and changes made by the AI.
    - Use `git diff` to check for unrelated or unexpected changes.
    - Pay special attention to dependency, database, configuration, and migration changes.
-2. Ensure relevant tests pass.
+2. Ensure relevant tests pass (once I create tests).
    - `npm test`
 3. Run the application locally and manually test the changed behavior.
    - `npm run dev`
    - http://localhost:3000
-4. Run automated validation.
+4. Run automated validation (generally AI does this already).
    - `npm run validate` (see package.json. performs format check, type check, and lint. I need to install the commands.)
 4. Commit and push the changes.
    - Include `Resolves #X.` at the end of the commit message so that GitHub automatically closes Issue #X.

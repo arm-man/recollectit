@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import styles from "./page.module.css";
@@ -28,9 +29,9 @@ export default async function LandingPage() {
         </div>
 
         <section className={styles.createSession} aria-label="New session">
-          <button type="button" disabled>
+          <Link href="/sessions/create" className={styles.createSessionButton}>
             Create New Session
-          </button>
+          </Link>
         </section>
 
         <div className={styles.sessionSections}>

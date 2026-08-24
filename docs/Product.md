@@ -90,7 +90,7 @@ Primary product success measure: students study regularly.
 ## Session Creation
 
 - When creating a new Session, the Student will be shown a page with the following content:
-  - A button in the upper left called **Landing Page** which takes the Student back to the Landing Page.
+  - A Recollect It watermark/logo in the upper left which takes the Student back to the Landing Page.
   - The total number of Questions to be asked in the Session based on the options selected within the page.
   - A dropdown menu to select a Subject.
   - A checkbox with **Ask All Questions**.
@@ -98,9 +98,9 @@ Primary product success measure: students study regularly.
   - A Question Accuracy filter displayed as **Question Accuracy: X Y**, where X is a dropdown menu to select `<=` or `>=` and Y is a dropdown menu to select a percentage from 0% to 100% in increments of 10%.
     - Implementation details can be altered as long as the spirit of the feature is maintained.
     - Example: If Question Accuracy <= 40% is selected, only Questions with an Accuracy of 40% or less are included.
+  - A button called **Home** that takes the Student to the Landing Page.
   - A button called **Start Session**.
   - Filter changes should call the API endpoint immediately.
-
 - If **Ask All Questions** is checked, all other filters on the page should disappear.
 - **Ask All Questions** will default to unchecked
 - Subjects to be displayed in alphabetical order.
