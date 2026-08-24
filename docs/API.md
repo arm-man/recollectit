@@ -172,19 +172,19 @@ type QuestionPrompt = {
 
 The Answer is not returned with the current Question.
 
-### Round State
+### Session State
 
 ```ts
-type RoundState = {
+type SessionState = {
   roundNumber: number;
-  questionNumber: number;
-  roundQuestionCount: number;
+  questionsAnsweredCorrectly: number;
+  questionsTotal: number;
 };
 ```
 
-`questionNumber` is the number of Questions Attempted in the current Round plus one. Skipping does not change it.
+`roundNumber` is the current Round derived as defined in `Database.md`.
 
-`roundQuestionCount` is fixed for the Round and is the number of Questions that were incomplete when the Round began.
+`questionsAnsweredCorrectly` is the number of Questions in the Session that have been answered correctly. `questionsTotal` is the total number of Questions in the Session. Both values describe the entire Session and do not reset when a new Round begins.
 
 ### Completion Summary
 
@@ -315,7 +315,7 @@ Because Accuracy and Question eligibility can change between preview and Session
 POST /api/sessions
 ```
 
-Creates a Session with a fixed set of eligible Questions and returns the initial Question and Round state.
+Creates a Session with a fixed set of eligible Questions and returns the initial Question and Session state.
 
 Request:
 
@@ -337,8 +337,8 @@ Server behavior:
 2. Apply the active-Session limit.
 3. Recalculate eligible Questions using current historical Accuracy.
 4. In one transaction, create the Session and all `session_questions` rows.
-5. Select the initial Question and determine the Round state.
-6. Return the created Session identifier, current Question, and Round state.
+5. Select the initial Question and determine the Session state.
+6. Return the created Session identifier, current Question, and Session state.
 
 Success response — `201 Created`:
 
@@ -349,10 +349,10 @@ Success response — `201 Created`:
     "questionId": 101,
     "questionText": "France"
   },
-  "round": {
+  "session": {
     "roundNumber": 1,
-    "questionNumber": 1,
-    "roundQuestionCount": 20
+    "questionsAnsweredCorrectly": 0,
+    "questionsTotal": 20
   }
 }
 ```
@@ -373,7 +373,7 @@ Expected errors:
 GET /api/sessions/{sessionId}
 ```
 
-Selects and returns a valid pending Question and the current Round state for an active Session. This endpoint is used when resuming or refreshing a Session.
+Selects and returns a valid pending Question and the current Session state for an active Session. This endpoint is used when resuming or refreshing a Session.
 
 The Session must be active and belong to the current Student.
 
@@ -385,10 +385,10 @@ Success response — `200 OK`:
     "questionId": 101,
     "questionText": "France"
   },
-  "round": {
+  "session": {
     "roundNumber": 1,
-    "questionNumber": 5,
-    "roundQuestionCount": 20
+    "questionsAnsweredCorrectly": 5,
+    "questionsTotal": 20
   }
 }
 ```
@@ -428,10 +428,10 @@ Success response — `200 OK`:
     "questionId": 102,
     "questionText": "Germany"
   },
-  "round": {
+  "session": {
     "roundNumber": 1,
-    "questionNumber": 5,
-    "roundQuestionCount": 20
+    "questionsAnsweredCorrectly": 5,
+    "questionsTotal": 20
   }
 }
 ```
@@ -491,10 +491,10 @@ Success response when the Session remains active — `200 OK`:
     "questionId": 102,
     "questionText": "Germany"
   },
-  "round": {
+  "session": {
     "roundNumber": 1,
-    "questionNumber": 6,
-    "roundQuestionCount": 20
+    "questionsAnsweredCorrectly": 5,
+    "questionsTotal": 20
   }
 }
 ```
@@ -594,10 +594,10 @@ Every Route Handler that uses PostgreSQL must use the Node.js runtime rather tha
 1. Create a valid Student, set the cookie, and reject an exact duplicate Username.
 2. Log in with exact case and reject different case.
 3. Preview Session filters, including a zero-Question result.
-4. Start a Session and confirm the API returns the Session identifier, initial Question, and Round state.
+4. Start a Session and confirm the API returns the Session identifier, initial Question, and Session state.
 5. Reject Session creation when there are no eligible Questions or five active Sessions.
 6. Submit incorrect and correct Guesses, including an empty Guess.
-7. Confirm Guess responses return the previous answer result, next-Question, and Round state.
+7. Confirm Guess responses return the previous answer result, next-Question, and Session state.
 8. Complete a Session and return the correct completion summary.
 9. Skip without incrementing Attempts or changing previous answer result.
 10. Reject Skip when no other Question is pending in the Round.

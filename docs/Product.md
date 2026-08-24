@@ -125,9 +125,10 @@ Primary product success measure: students study regularly.
   - A section showing info about the Session:
     - The Subject
     - The Categories, if applicable
-  - The Round number along with the question number out of the total questions for the current round, e.g. `Round 1 : Question 5 of 20`
-    - The numerator (i.e. the 5 in the label `Question 5 of 20`) represents the number of Questions Attempted in the current Round plus one. Skipping does not advance it. Therefore, the replacement Question displays the same numerator as the skipped Question.
-    - The denominator (i.e. the 20 in the label `Question 5 of 20`) is the Round question count which is fixed when the Round begins. In this example, there will be 20 Attempts scheduled for the Round.
+  - The Round number on its own line or in its own section, e.g. `Round 1`.
+  - Session progress on a separate line or in a separate section, e.g. `5 of 20 questions answered correctly`.
+    - The first number is the number of Questions in the Session that have been answered correctly.
+    - The second number is the total number of Questions in the Session.
   - A section for the Q&A:
     - The Question
     - An area to display the Guess as it is typed

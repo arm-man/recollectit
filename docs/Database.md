@@ -188,7 +188,7 @@ When filtering many Questions for Session creation, aggregate Attempts once for 
 
 Do not store an Accuracy percentage column initially. Stored totals would duplicate the authoritative attempt counts in session_questions and require additional update logic.
 
-### Current Round
+### Current Round and Session Progress
 
 Assume that all references to `session_questions` below are limited to the Questions belonging to the Session.
 
@@ -204,6 +204,11 @@ If the minimum and maximum are equal, all pending Questions have been attempted 
 If the minimum and maximum are different, the Session is partway through a Round. The Round number is the maximum value.
 
 This design does not require a separate Round table.
+
+Session progress (e.g. `5 of 20 questions answered correctly`) is derived separately from the Round number. For one `session_id`:
+
+- `questionsAnsweredCorrectly` is the number of `session_questions` rows whose `completed_at` is not NULL.
+- `questionsTotal` is the total number of `session_questions` rows.
 
 ### Current and Previous Question State
 
