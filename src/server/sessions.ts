@@ -5,7 +5,9 @@ import {
   createSessionWithQuestions,
   doCategoriesBelongToSubject,
   doesSubjectExist,
+  getSessionOwnershipRecord,
   getSessionPageRecord,
+  markSessionCompleted,
 } from "@/server/session-db";
 
 export type AccuracyOperator = "lte" | "gte";
@@ -51,6 +53,12 @@ export type GetSessionResult =
         questionsTotal: number;
       };
     }
+  | { status: "not-found" }
+  | { status: "forbidden" }
+  | { status: "completed" };
+
+export type AbandonSessionResult =
+  | { status: "success"; completedAt: Date }
   | { status: "not-found" }
   | { status: "forbidden" }
   | { status: "completed" };
@@ -160,4 +168,29 @@ export async function getSession(
       questionsTotal: record.questionsTotal,
     },
   };
+}
+
+export async function abandonSession(
+  studentId: number,
+  sessionId: number,
+): Promise<AbandonSessionResult> {
+  const record = await getSessionOwnershipRecord(sessionId);
+
+  if (!record) {
+    return { status: "not-found" };
+  }
+
+  if (record.studentId !== studentId) {
+    return { status: "forbidden" };
+  }
+
+  if (record.completedAt !== null) {
+    return { status: "completed" };
+  }
+
+  const completedAt = await markSessionCompleted(sessionId, studentId);
+
+  return completedAt
+    ? { status: "success", completedAt }
+    : { status: "completed" };
 }

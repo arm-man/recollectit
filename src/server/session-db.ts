@@ -53,6 +53,22 @@ type SessionPageRow = {
   maximum_pending_attempts: number | null;
 };
 
+type ActiveSessionRow = {
+  session_id: number;
+  subject_title: string;
+  categories: string[];
+  created_at: Date;
+};
+
+type SessionOwnershipRow = {
+  student_id: number;
+  completed_at: Date | null;
+};
+
+type CompletedSessionRow = {
+  completed_at: Date;
+};
+
 export type SessionCreationPageData = {
   subjects: SessionCreationSubject[];
   defaultSubjectId: number | null;
@@ -75,6 +91,18 @@ export type SessionPageRecord = {
   roundNumber: number | null;
   questionsAnsweredCorrectly: number;
   questionsTotal: number;
+};
+
+export type ActiveSession = {
+  sessionId: number;
+  subject: string;
+  categories: string[];
+  createdAt: string;
+};
+
+export type SessionOwnershipRecord = {
+  studentId: number;
+  completedAt: Date | null;
 };
 
 export async function getSessionCreationPageData(
@@ -129,6 +157,39 @@ export async function getSessionCreationPageData(
     defaultSubjectId:
       defaultSubjectResult.rows[0]?.subject_id ?? subjects[0]?.id ?? null,
   };
+}
+
+export async function getActiveSessions(
+  studentId: number,
+): Promise<ActiveSession[]> {
+  const result = await pool.query<ActiveSessionRow>(
+    `SELECT
+       sessions.id AS session_id,
+       subjects.title AS subject_title,
+       sessions.created_at,
+       COALESCE(
+         ARRAY_AGG(DISTINCT categories.title ORDER BY categories.title)
+           FILTER (WHERE categories.id IS NOT NULL),
+         ARRAY[]::text[]
+       ) AS categories
+     FROM sessions
+     JOIN subjects ON subjects.id = sessions.subject_id
+     JOIN session_questions ON session_questions.session_id = sessions.id
+     JOIN questions ON questions.id = session_questions.question_id
+     LEFT JOIN categories ON categories.id = questions.category_id
+     WHERE sessions.student_id = $1
+       AND sessions.completed_at IS NULL
+     GROUP BY sessions.id, subjects.title
+     ORDER BY sessions.created_at DESC, sessions.id DESC`,
+    [studentId],
+  );
+
+  return result.rows.map((row) => ({
+    sessionId: row.session_id,
+    subject: row.subject_title,
+    categories: row.categories,
+    createdAt: row.created_at.toISOString(),
+  }));
 }
 
 export async function doesSubjectExist(subjectId: number): Promise<boolean> {
@@ -447,4 +508,37 @@ export async function getSessionPageRecord(
     questionsAnsweredCorrectly: row.questions_answered_correctly,
     questionsTotal: row.questions_total,
   };
+}
+
+export async function getSessionOwnershipRecord(
+  sessionId: number,
+): Promise<SessionOwnershipRecord | null> {
+  const result = await pool.query<SessionOwnershipRow>(
+    `SELECT student_id, completed_at
+     FROM sessions
+     WHERE id = $1`,
+    [sessionId],
+  );
+  const row = result.rows[0];
+
+  return row
+    ? { studentId: row.student_id, completedAt: row.completed_at }
+    : null;
+}
+
+export async function markSessionCompleted(
+  sessionId: number,
+  studentId: number,
+): Promise<Date | null> {
+  const result = await pool.query<CompletedSessionRow>(
+    `UPDATE sessions
+     SET completed_at = NOW()
+     WHERE id = $1
+       AND student_id = $2
+       AND completed_at IS NULL
+     RETURNING completed_at`,
+    [sessionId, studentId],
+  );
+
+  return result.rows[0]?.completed_at ?? null;
 }

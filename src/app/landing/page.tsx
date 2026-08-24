@@ -1,8 +1,12 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { ActiveSessions } from "./ActiveSessions";
 import styles from "./page.module.css";
+import { getActiveSessions } from "@/server/session-db";
 import { getCurrentStudent } from "@/server/student-identity";
+
+export const runtime = "nodejs";
 
 export default async function LandingPage() {
   const student = await getCurrentStudent();
@@ -10,6 +14,8 @@ export default async function LandingPage() {
   if (!student) {
     redirect("/");
   }
+
+  const activeSessions = await getActiveSessions(student.id);
 
   return (
     <div className={styles.page}>
@@ -37,7 +43,7 @@ export default async function LandingPage() {
         <div className={styles.sessionSections}>
           <section className={styles.sessionSection}>
             <h2>Active Sessions</h2>
-            <p>No active sessions.</p>
+            <ActiveSessions sessions={activeSessions} />
           </section>
 
           <section className={styles.sessionSection}>

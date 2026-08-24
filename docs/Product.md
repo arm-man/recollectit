@@ -79,12 +79,13 @@ Primary product success measure: students study regularly.
   - The Student's Username.
   - A highlighted section with a single button to create a new Session.
   - A section that lists all active Sessions, along with a "Resume" button and "Abandon" button next to each active Session.
-    - For each active Session, show the Subject and creation date.
+    - For each active Session, show the Subject, Categories (if applicable), and creation date.
     - If there are no active Sessions, this section will simply show a note saying "No active sessions.".
+    - The "Resume" button will navigate to /sessions/{session_id}
     - The "Abandon" button should prompt the Student to confirm that they want to Abandon the Session before the Session is actually abandoned.
     - Abandoning a Session marks the Session as completed. The Session is retained in history along with its accumulated Attempt counts and their effect on Question Accuracy. Individual Guesses are not retained.    
   - A section that lists historical Sessions, in order of most recently completed first.
-    - For each historical session, show the Subject, completion date, and Session Accuracy.
+    - For each historical session, show the Subject, Categories (if applicable), completion date, and Session Accuracy.
     - If there are no historical Sessions, this section will simply show a note saying "No completed sessions.".
 
 ## Session Creation
