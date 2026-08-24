@@ -1,10 +1,7 @@
 import { getCurrentStudent } from "@/server/student-identity";
 import { logUnexpectedError } from "@/server/logs";
-import {
-  previewSessionQuestionCount,
-  type AccuracyPercent,
-  type SessionFilters,
-} from "@/server/sessions";
+import { previewSessionQuestionCount } from "@/server/sessions";
+import { parseSessionRequest } from "../session-request";
 
 export const runtime = "nodejs";
 
@@ -15,80 +12,8 @@ type ApiErrorCode =
   | "CATEGORY_SUBJECT_MISMATCH"
   | "INTERNAL_ERROR";
 
-type SessionPreviewRequest = {
-  subjectId: number;
-  filters: SessionFilters;
-};
-
 function errorResponse(code: ApiErrorCode, message: string, status: number) {
   return Response.json({ error: { code, message } }, { status });
-}
-
-function isPositiveInteger(value: unknown): value is number {
-  return typeof value === "number" && Number.isSafeInteger(value) && value > 0;
-}
-
-function areUniquePositiveIntegerIds(value: unknown): value is number[] {
-  return (
-    Array.isArray(value) &&
-    value.every(isPositiveInteger) &&
-    new Set(value).size === value.length
-  );
-}
-
-function isAccuracyPercent(value: unknown): value is AccuracyPercent {
-  return (
-    typeof value === "number" &&
-    Number.isInteger(value) &&
-    value >= 0 &&
-    value <= 100 &&
-    value % 10 === 0
-  );
-}
-
-function parseRequest(body: unknown): SessionPreviewRequest | null {
-  if (
-    typeof body !== "object" ||
-    body === null ||
-    !("subjectId" in body) ||
-    !isPositiveInteger(body.subjectId) ||
-    !("filters" in body) ||
-    typeof body.filters !== "object" ||
-    body.filters === null ||
-    !("askAllQuestions" in body.filters) ||
-    typeof body.filters.askAllQuestions !== "boolean"
-  ) {
-    return null;
-  }
-
-  if (body.filters.askAllQuestions) {
-    return {
-      subjectId: body.subjectId,
-      filters: { askAllQuestions: true },
-    };
-  }
-
-  if (
-    !("categoryIds" in body.filters) ||
-    !areUniquePositiveIntegerIds(body.filters.categoryIds) ||
-    !("accuracyOperator" in body.filters) ||
-    (body.filters.accuracyOperator !== "lte" &&
-      body.filters.accuracyOperator !== "gte") ||
-    !("accuracyPercent" in body.filters) ||
-    !isAccuracyPercent(body.filters.accuracyPercent)
-  ) {
-    return null;
-  }
-
-  return {
-    subjectId: body.subjectId,
-    filters: {
-      askAllQuestions: false,
-      categoryIds: body.filters.categoryIds,
-      accuracyOperator: body.filters.accuracyOperator,
-      accuracyPercent: body.filters.accuracyPercent,
-    },
-  };
 }
 
 export async function POST(request: Request): Promise<Response> {
@@ -111,7 +36,7 @@ export async function POST(request: Request): Promise<Response> {
       );
     }
 
-    const previewRequest = parseRequest(body);
+    const previewRequest = parseSessionRequest(body);
 
     if (!previewRequest) {
       return errorResponse(

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import styles from "./page.module.css";
 
@@ -56,6 +56,21 @@ function getResponseQuestionCount(body: unknown): number | null {
   return body.questionCount;
 }
 
+function getResponseSessionId(body: unknown): number | null {
+  if (
+    typeof body !== "object" ||
+    body === null ||
+    !("sessionId" in body) ||
+    typeof body.sessionId !== "number" ||
+    !Number.isSafeInteger(body.sessionId) ||
+    body.sessionId <= 0
+  ) {
+    return null;
+  }
+
+  return body.sessionId;
+}
+
 export function SessionCreationForm({
   subjects,
   defaultSubjectId,
@@ -74,6 +89,8 @@ export function SessionCreationForm({
   const [isUpdatingCount, setIsUpdatingCount] = useState(false);
   const [previewError, setPreviewError] = useState<string | null>(null);
   const [startError, setStartError] = useState<string | null>(null);
+  const [isStartingSession, setIsStartingSession] = useState(false);
+  const startRequestPending = useRef(false);
 
   const selectedSubject =
     subjects.find((subject) => subject.id === subjectId) ?? null;
@@ -162,7 +179,11 @@ export function SessionCreationForm({
     );
   }
 
-  function startSession() {
+  async function startSession() {
+    if (startRequestPending.current) {
+      return;
+    }
+
     setStartError(null);
 
     if (isUpdatingCount) {
@@ -177,9 +198,64 @@ export function SessionCreationForm({
 
     if (questionCount === 0) {
       setStartError(ZERO_QUESTION_ERROR);
+      return;
     }
 
-    // Session creation is intentionally deferred to a later phase.
+    if (subjectId === null) {
+      setStartError("Select a Subject before starting a Session.");
+      return;
+    }
+
+    const filters = askAllQuestions
+      ? { askAllQuestions: true }
+      : {
+          askAllQuestions: false,
+          categoryIds: selectedCategoryIds,
+          accuracyOperator,
+          accuracyPercent,
+        };
+
+    startRequestPending.current = true;
+    setIsStartingSession(true);
+    let didStartSession = false;
+
+    try {
+      const response = await fetch("/api/sessions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subjectId, filters }),
+      });
+      const responseBody: unknown = await response.json().catch(() => null);
+
+      if (response.status === 401) {
+        router.replace("/");
+        return;
+      }
+
+      if (!response.ok) {
+        setStartError(
+          getResponseErrorMessage(responseBody) ?? GENERIC_ERROR_MESSAGE,
+        );
+        return;
+      }
+
+      const sessionId = getResponseSessionId(responseBody);
+
+      if (sessionId === null) {
+        setStartError(GENERIC_ERROR_MESSAGE);
+        return;
+      }
+
+      didStartSession = true;
+      router.push(`/sessions/${sessionId}`);
+    } catch {
+      setStartError(GENERIC_ERROR_MESSAGE);
+    } finally {
+      if (!didStartSession) {
+        startRequestPending.current = false;
+        setIsStartingSession(false);
+      }
+    }
   }
 
   return (
@@ -320,9 +396,10 @@ export function SessionCreationForm({
         <button
           type="button"
           className={styles.startButton}
-          onClick={startSession}
+          disabled={isStartingSession}
+          onClick={() => void startSession()}
         >
-          Start Session
+          {isStartingSession ? "Starting Session…" : "Start Session"}
         </button>
       </div>
     </main>

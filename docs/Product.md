@@ -71,8 +71,6 @@ Primary product success measure: students study regularly.
 - The set of Questions in a Session is determined when the Session starts and does not change afterward.
 - Assume that the Subject, Category, Question, and Answer will not be edited or deleted while the Session is in progress, so any such interaction can be ignored.
   - Note that this assumption requires an operational promise from administrators, which has been deemed ok for the first release.
-- An active Session may be abandoned. Any time the Student attempts to Abandon a Session, a confirmation prompt is shown to the Student before the Session is actually abandoned.
-- Abandoning a Session marks the Session as completed. The Session is retained in history along with its accumulated Attempt counts and their effect on Question Accuracy. Individual Guesses are not retained.
 
 ## Landing Page
 
@@ -83,6 +81,8 @@ Primary product success measure: students study regularly.
   - A section that lists all active Sessions, along with a "Resume" button and "Abandon" button next to each active Session.
     - For each active Session, show the Subject and creation date.
     - If there are no active Sessions, this section will simply show a note saying "No active sessions.".
+    - The "Abandon" button should prompt the Student to confirm that they want to Abandon the Session before the Session is actually abandoned.
+    - Abandoning a Session marks the Session as completed. The Session is retained in history along with its accumulated Attempt counts and their effect on Question Accuracy. Individual Guesses are not retained.    
   - A section that lists historical Sessions, in order of most recently completed first.
     - For each historical session, show the Subject, completion date, and Session Accuracy.
     - If there are no historical Sessions, this section will simply show a note saying "No completed sessions.".
@@ -101,6 +101,8 @@ Primary product success measure: students study regularly.
   - A button called **Home** that takes the Student to the Landing Page.
   - A button called **Start Session**.
   - Filter changes should call the API endpoint immediately.
+- **Start Session** calls `POST /api/sessions` with the selected Subject and filters. The endpoint returns only the new `sessionId`, after which the browser navigates to `/sessions/{sessionId}`.
+- While the start request is in progress, **Start Session** is disabled to prevent accidental duplicate Sessions. If the request fails, the Student remains on the page, sees an error, and may retry.
 - If **Ask All Questions** is checked, all other filters on the page should disappear.
 - **Ask All Questions** will default to unchecked
 - Subjects to be displayed in alphabetical order.
@@ -125,6 +127,7 @@ Primary product success measure: students study regularly.
   - A section showing info about the Session:
     - The Subject
     - The Categories, if applicable
+      - Categories are the distinct categorized Questions represented in the Session's fixed Question set. Uncategorized Questions do not add a Category label.
   - The Round number on its own line or in its own section, e.g. `Round 1`.
   - Session progress on a separate line or in a separate section, e.g. `5 of 20 questions answered correctly`.
     - The first number is the number of Questions in the Session that have been answered correctly.
@@ -212,7 +215,3 @@ Example:
 - The Question and Guess input should remain easy to read and use on a phone.
 - Controls must be touch-friendly.
 - Core study interactions must not depend on hover.
-
-## Initial Release
-
-The implementation should be developed incrementally even though the complete intended product behavior is documented here.

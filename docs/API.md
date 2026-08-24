@@ -315,7 +315,7 @@ Because Accuracy and Question eligibility can change between preview and Session
 POST /api/sessions
 ```
 
-Creates a Session with a fixed set of eligible Questions and returns the initial Question and Session state.
+Creates a Session with a fixed set of eligible Questions and returns its identifier. The browser then navigates to `/sessions/{sessionId}`, where `GET /api/sessions/{sessionId}` retrieves the initial Question and Session state.
 
 Request:
 
@@ -337,23 +337,13 @@ Server behavior:
 2. Apply the active-Session limit.
 3. Recalculate eligible Questions using current historical Accuracy.
 4. In one transaction, create the Session and all `session_questions` rows.
-5. Select the initial Question and determine the Session state.
-6. Return the created Session identifier, current Question, and Session state.
+5. Return only the created Session identifier.
 
 Success response — `201 Created`:
 
 ```json
 {
-  "sessionId": 45,
-  "currentQuestion": {
-    "questionId": 101,
-    "questionText": "France"
-  },
-  "session": {
-    "roundNumber": 1,
-    "questionsAnsweredCorrectly": 0,
-    "questionsTotal": 20
-  }
+  "sessionId": 45
 }
 ```
 
@@ -373,7 +363,7 @@ Expected errors:
 GET /api/sessions/{sessionId}
 ```
 
-Selects and returns a valid pending Question and the current Session state for an active Session. This endpoint is used when resuming or refreshing a Session.
+Selects and returns the Session details, a valid pending Question, and the current Session state for an active Session. This endpoint is used when opening, resuming, or refreshing a Session. Each request selects the Question randomly from those eligible in the current Round, so refreshing may show a different Question.
 
 The Session must be active and belong to the current Student.
 
@@ -381,6 +371,10 @@ Success response — `200 OK`:
 
 ```json
 {
+  "sessionDetails": {
+    "subject": "World Capitals",
+    "categories": ["Asia", "Europe"]
+  },
   "currentQuestion": {
     "questionId": 101,
     "questionText": "France"
@@ -392,6 +386,8 @@ Success response — `200 OK`:
   }
 }
 ```
+
+`sessionDetails.categories` contains the distinct, alphabetically ordered, non-null Categories represented by the Session's fixed Questions. It is an empty array when none of those Questions has a Category.
 
 The response does not include `previous` state because previous Q&A is retained only in browser state and is not restored when a Session is resumed or refreshed.
 
@@ -594,7 +590,7 @@ Every Route Handler that uses PostgreSQL must use the Node.js runtime rather tha
 1. Create a valid Student, set the cookie, and reject an exact duplicate Username.
 2. Log in with exact case and reject different case.
 3. Preview Session filters, including a zero-Question result.
-4. Start a Session and confirm the API returns the Session identifier, initial Question, and Session state.
+4. Start a Session and confirm the API returns only the Session identifier, then get the Session and confirm it returns the details, initial Question, and Session state.
 5. Reject Session creation when there are no eligible Questions or five active Sessions.
 6. Submit incorrect and correct Guesses, including an empty Guess.
 7. Confirm Guess responses return the previous answer result, next-Question, and Session state.

@@ -359,6 +359,11 @@
   background: var(--color-primary-hover);
 }
 
+.startButton:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
 .homeButton:focus-visible,
 .startButton:focus-visible {
   outline: 3px solid var(--color-selection);

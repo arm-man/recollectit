@@ -214,6 +214,8 @@ Session progress (e.g. `5 of 20 questions answered correctly`) is derived separa
 
 The database does not store a `current_question_id` on the Session. The server selects a random pending Question when it needs to present one.
 
+The Session page's Category labels are derived from the distinct, non-null Categories represented by its fixed `session_questions` membership. Selected creation filters are not stored separately.
+
 The previous Q&A panel is browser-visit state and is intentionally hidden after the page is opened or resumed, so it does not require a durable database field.
 
 A skipped Question remains pending because skipping writes no Attempt. The server can choose another pending Question for the response.
