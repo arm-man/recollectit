@@ -139,14 +139,15 @@ Primary product success measure: students study regularly.
     - A **Skip for now** button
     - A **Submit** button
   - A section showing the previous Q&A:
-    - The previous Question
-    - The previous Answer
-    - The previous Guess
+    - The most recently submitted Guess
+    - The correct Answer
+    - Whether the Guess was correct or incorrect
+    - The previous Question is not shown.
 
 - Pressing Enter functions the same as clicking **Submit** when the Guess input has focus.
 - An empty Guess is valid.
 - The Guess is limited to 100 characters.
-- The Student's Guess to the previous Question will be highlighted in such a way as to make it obvious as to whether it was correct or not, e.g. being colored green or red.
+- The most recently submitted Guess and its Result will use a light green or red background with a stronger status-colored border. Guess text remains dark, and the Result includes an explicit correct or incorrect icon and label so the outcome does not rely on color alone. The correct Answer remains visually neutral.
 - The previous Q&A section is hidden until the Student submits a Guess after opening or resuming the Session page.
 - **Skip for now** does not count as a Guess/Attempt and does not affect the previous Q&A section.
 - A skipped Question remains pending in the current Round, and a different pending Question is selected randomly. The skipped Question must be presented and Attempted later before the Round can end.

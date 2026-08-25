@@ -10,6 +10,10 @@ export async function logInfo(message: string): Promise<void> {
   );
 }
 
+export async function logError(message: string): Promise<void> {
+  await pool.query(`INSERT INTO logs (message) VALUES ($1)`, [message]);
+}
+
 export async function logUnexpectedError(
   context: string,
   error: unknown,

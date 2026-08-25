@@ -525,6 +525,10 @@ Expected errors:
 | `409` | `SESSION_ALREADY_COMPLETED` | The Session is no longer active. |
 | `409` | `QUESTION_ALREADY_COMPLETED` | The Question was already completed in this Session. |
 
+If the guesses API returns an error:
+  - log the error in the logs table with details of the error.
+  - the client code should display an error to the user with details of the error or use the generic error message "An unexpected server error occurred. Reloading a new question." and attempt to recover from the error.
+
 ### Abandon Session
 
 ```http

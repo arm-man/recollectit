@@ -5,11 +5,14 @@ import {
   createSessionWithQuestions,
   doCategoriesBelongToSubject,
   doesSubjectExist,
+  getGuessQuestionRecord,
   getSessionOwnershipRecord,
   getSessionPageRecord,
   getSkipQuestionRecord,
   markSessionCompleted,
+  recordGuess,
 } from "@/server/session-db";
+import { isGuessCorrect } from "@/server/guess-evaluation";
 
 export type AccuracyOperator = "lte" | "gte";
 
@@ -83,6 +86,42 @@ export type SkipQuestionResult =
   | { status: "question-not-in-session" }
   | { status: "question-not-pending" }
   | { status: "skip-not-available" };
+
+export type SubmitGuessResult =
+  | {
+      status: "success";
+      sessionCompleted: false;
+      previous: {
+        answerText: string;
+        correct: boolean;
+      };
+      currentQuestion: {
+        questionId: number;
+        questionText: string;
+      };
+      session: {
+        roundNumber: number;
+        questionsAnsweredCorrectly: number;
+        questionsTotal: number;
+      };
+    }
+  | {
+      status: "success";
+      sessionCompleted: true;
+      previous: {
+        answerText: string;
+        correct: boolean;
+      };
+      summary: {
+        uniqueQuestionCount: number;
+        guessCount: number;
+      };
+    }
+  | { status: "not-found" }
+  | { status: "forbidden" }
+  | { status: "completed" }
+  | { status: "question-not-in-session" }
+  | { status: "question-already-completed" };
 
 export async function previewSessionQuestionCount(
   studentId: number,
@@ -267,6 +306,83 @@ export async function skipQuestion(
       roundNumber: skipRecord.roundNumber,
       questionsAnsweredCorrectly: skipRecord.questionsAnsweredCorrectly,
       questionsTotal: skipRecord.questionsTotal,
+    },
+  };
+}
+
+export async function submitGuess(
+  studentId: number,
+  sessionId: number,
+  questionId: number,
+  guess: string,
+): Promise<SubmitGuessResult> {
+  const questionRecord = await getGuessQuestionRecord(sessionId, questionId);
+
+  if (!questionRecord) {
+    return { status: "not-found" };
+  }
+
+  if (questionRecord.studentId !== studentId) {
+    return { status: "forbidden" };
+  }
+
+  if (questionRecord.sessionCompletedAt !== null) {
+    return { status: "completed" };
+  }
+
+  if (questionRecord.questionId === null || questionRecord.answerText === null) {
+    return { status: "question-not-in-session" };
+  }
+
+  if (questionRecord.questionCompletedAt !== null) {
+    return { status: "question-already-completed" };
+  }
+
+  const correct = isGuessCorrect(guess, questionRecord.answerText);
+  const result = await recordGuess(sessionId, questionId, correct);
+
+  if (result.status === "not-recorded") {
+    // Re-read the durable state to translate the rare concurrent update into
+    // the same controlled response the initial validation would have returned.
+    const currentRecord = await getGuessQuestionRecord(sessionId, questionId);
+
+    if (currentRecord && currentRecord.sessionCompletedAt !== null) {
+      return { status: "completed" };
+    }
+
+    if (currentRecord && currentRecord.questionCompletedAt !== null) {
+      return { status: "question-already-completed" };
+    }
+
+    throw new Error("Guess could not be recorded for an active Question.");
+  }
+
+  const previous = {
+    answerText: questionRecord.answerText,
+    correct,
+  };
+
+  if (result.status === "session-completed") {
+    return {
+      status: "success",
+      sessionCompleted: true,
+      previous,
+      summary: {
+        uniqueQuestionCount: result.uniqueQuestionCount,
+        guessCount: result.guessCount,
+      },
+    };
+  }
+
+  return {
+    status: "success",
+    sessionCompleted: false,
+    previous,
+    currentQuestion: result.currentQuestion,
+    session: {
+      roundNumber: result.roundNumber,
+      questionsAnsweredCorrectly: result.questionsAnsweredCorrectly,
+      questionsTotal: result.questionsTotal,
     },
   };
 }

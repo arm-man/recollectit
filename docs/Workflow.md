@@ -5,6 +5,7 @@
 - Obtain as many specifics about the change as you can and include them in the prompt.
   - e.g. don't say `show an error` but instead say `display the error: The maximum length of the username is 25 characters`.
 - Follow the Template below and add the final prompt to GitHub Issues for record keeping.
+- Instead of adding specifics/clarification to the prompt, update the documentation and basically the prompt should contain only what to implement. The 'how' is maintained in documentation.
 
 ## Template
 
@@ -21,6 +22,9 @@ In the prompt, create the Section: `Before making changes`, which, at a minimum,
 In the prompt, create the Section: `Requirements`, which, at a minimum, will include:
 - Create files based on the project's documented folder structure and conventions.
 - Keep the implementation simple.
+
+In the prompt, create a Section: `To validate this change`, which, at a minimum, will include:
+- {add tests}
 
 In the prompt, create a Section: `After making the change`, which, at a minimum, will include:
 - Explain each important decision made and important part of the implementation.

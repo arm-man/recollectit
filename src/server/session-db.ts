@@ -81,6 +81,29 @@ type SkipQuestionRow = {
   questions_total: number;
 };
 
+type GuessQuestionRow = {
+  student_id: number;
+  session_completed_at: Date | null;
+  question_id: number | null;
+  question_completed_at: Date | null;
+  answer_text: string | null;
+};
+
+type UpdatedGuessRow = {
+  question_id: number;
+};
+
+type GuessSessionStateRow = {
+  session_completed_at: Date | null;
+  next_question_id: number | null;
+  next_question_text: string | null;
+  minimum_pending_attempts: number | null;
+  maximum_pending_attempts: number | null;
+  questions_answered_correctly: number;
+  questions_total: number;
+  guess_count: number;
+};
+
 export type SessionCreationPageData = {
   subjects: SessionCreationSubject[];
   defaultSubjectId: number | null;
@@ -130,6 +153,32 @@ export type SkipQuestionRecord = {
   questionsAnsweredCorrectly: number;
   questionsTotal: number;
 };
+
+export type GuessQuestionRecord = {
+  studentId: number;
+  sessionCompletedAt: Date | null;
+  questionId: number | null;
+  questionCompletedAt: Date | null;
+  answerText: string | null;
+};
+
+export type RecordGuessDatabaseResult =
+  | {
+      status: "success";
+      currentQuestion: {
+        questionId: number;
+        questionText: string;
+      };
+      roundNumber: number;
+      questionsAnsweredCorrectly: number;
+      questionsTotal: number;
+    }
+  | {
+      status: "session-completed";
+      uniqueQuestionCount: number;
+      guessCount: number;
+    }
+  | { status: "not-recorded" };
 
 export async function getSessionCreationPageData(
   studentId: number,
@@ -646,6 +695,179 @@ export async function getSkipQuestionRecord(
     questionsAnsweredCorrectly: row.questions_answered_correctly,
     questionsTotal: row.questions_total,
   };
+}
+
+export async function getGuessQuestionRecord(
+  sessionId: number,
+  questionId: number,
+): Promise<GuessQuestionRecord | null> {
+  const result = await pool.query<GuessQuestionRow>(
+    `SELECT
+       sessions.student_id,
+       sessions.completed_at AS session_completed_at,
+       session_questions.question_id,
+       session_questions.completed_at AS question_completed_at,
+       questions.answer_text
+     FROM sessions
+     LEFT JOIN session_questions
+       ON session_questions.session_id = sessions.id
+       AND session_questions.question_id = $2
+     LEFT JOIN questions ON questions.id = session_questions.question_id
+     WHERE sessions.id = $1`,
+    [sessionId, questionId],
+  );
+  const row = result.rows[0];
+
+  return row
+    ? {
+        studentId: row.student_id,
+        sessionCompletedAt: row.session_completed_at,
+        questionId: row.question_id,
+        questionCompletedAt: row.question_completed_at,
+        answerText: row.answer_text,
+      }
+    : null;
+}
+
+export async function recordGuess(
+  sessionId: number,
+  questionId: number,
+  isCorrect: boolean,
+): Promise<RecordGuessDatabaseResult> {
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    const updateResult = await client.query<UpdatedGuessRow>(
+      `UPDATE session_questions
+       SET
+         attempts = session_questions.attempts + 1,
+         completed_at = CASE
+           WHEN $3::boolean THEN NOW()
+           ELSE session_questions.completed_at
+         END
+       FROM sessions
+       WHERE session_questions.session_id = $1
+         AND session_questions.question_id = $2
+         AND session_questions.completed_at IS NULL
+         AND sessions.id = session_questions.session_id
+         AND sessions.completed_at IS NULL
+       RETURNING session_questions.question_id`,
+      [sessionId, questionId, isCorrect],
+    );
+
+    if (updateResult.rows.length === 0) {
+      await client.query("ROLLBACK");
+      return { status: "not-recorded" };
+    }
+
+    await client.query(
+      `UPDATE sessions
+       SET completed_at = NOW()
+       WHERE id = $1
+         AND completed_at IS NULL
+         AND NOT EXISTS (
+           SELECT 1
+           FROM session_questions
+           WHERE session_id = $1
+             AND completed_at IS NULL
+         )`,
+      [sessionId],
+    );
+
+    const stateResult = await client.query<GuessSessionStateRow>(
+      `WITH session_state AS (
+         SELECT
+           COUNT(*)::integer AS questions_total,
+           COUNT(*) FILTER (
+             WHERE completed_at IS NOT NULL
+           )::integer AS questions_answered_correctly,
+           COALESCE(SUM(attempts), 0)::integer AS guess_count,
+           MIN(attempts) FILTER (
+             WHERE completed_at IS NULL
+           )::integer AS minimum_pending_attempts,
+           MAX(attempts) FILTER (
+             WHERE completed_at IS NULL
+           )::integer AS maximum_pending_attempts
+         FROM session_questions
+         WHERE session_id = $1
+       ),
+       next_question AS (
+         SELECT
+           questions.id AS next_question_id,
+           questions.question_text AS next_question_text
+         FROM session_questions
+         JOIN questions ON questions.id = session_questions.question_id
+         CROSS JOIN session_state
+         WHERE session_questions.session_id = $1
+           AND session_questions.completed_at IS NULL
+           AND session_questions.attempts =
+             session_state.minimum_pending_attempts
+         ORDER BY (session_questions.question_id = $2), RANDOM()
+         LIMIT 1
+       )
+       SELECT
+         sessions.completed_at AS session_completed_at,
+         next_question.next_question_id,
+         next_question.next_question_text,
+         session_state.minimum_pending_attempts,
+         session_state.maximum_pending_attempts,
+         session_state.questions_answered_correctly,
+         session_state.questions_total,
+         session_state.guess_count
+       FROM sessions
+       CROSS JOIN session_state
+       LEFT JOIN next_question ON TRUE
+       WHERE sessions.id = $1`,
+      [sessionId, questionId],
+    );
+    const state = stateResult.rows[0];
+
+    if (!state) {
+      throw new Error("Guess state query did not return a row.");
+    }
+
+    if (state.session_completed_at !== null) {
+      await client.query("COMMIT");
+      return {
+        status: "session-completed",
+        uniqueQuestionCount: state.questions_total,
+        guessCount: state.guess_count,
+      };
+    }
+
+    if (
+      state.next_question_id === null ||
+      state.next_question_text === null ||
+      state.minimum_pending_attempts === null ||
+      state.maximum_pending_attempts === null
+    ) {
+      throw new Error("Active Session did not have a pending Question.");
+    }
+
+    const roundNumber =
+      state.minimum_pending_attempts === state.maximum_pending_attempts
+        ? state.minimum_pending_attempts + 1
+        : state.maximum_pending_attempts;
+
+    await client.query("COMMIT");
+    return {
+      status: "success",
+      currentQuestion: {
+        questionId: state.next_question_id,
+        questionText: state.next_question_text,
+      },
+      roundNumber,
+      questionsAnsweredCorrectly: state.questions_answered_correctly,
+      questionsTotal: state.questions_total,
+    };
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+  }
 }
 
 export async function markSessionCompleted(
