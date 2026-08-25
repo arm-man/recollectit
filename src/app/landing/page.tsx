@@ -2,8 +2,9 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { ActiveSessions } from "./ActiveSessions";
+import { CompletedSessions } from "./CompletedSessions";
 import styles from "./page.module.css";
-import { getActiveSessions } from "@/server/session-db";
+import { getActiveSessions, getHistoricalSessions } from "@/server/session-db";
 import { getCurrentStudent } from "@/server/student-identity";
 
 export const runtime = "nodejs";
@@ -15,7 +16,10 @@ export default async function LandingPage() {
     redirect("/");
   }
 
-  const activeSessions = await getActiveSessions(student.id);
+  const [activeSessions, historicalSessions] = await Promise.all([
+    getActiveSessions(student.id),
+    getHistoricalSessions(student.id),
+  ]);
 
   return (
     <div className={styles.page}>
@@ -48,7 +52,7 @@ export default async function LandingPage() {
 
           <section className={styles.sessionSection}>
             <h2>Completed Sessions</h2>
-            <p>No completed sessions.</p>
+            <CompletedSessions sessions={historicalSessions} />
           </section>
         </div>
       </main>

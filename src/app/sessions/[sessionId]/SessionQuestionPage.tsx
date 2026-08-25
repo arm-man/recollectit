@@ -191,6 +191,15 @@ function getGuessResponseData(body: unknown): GuessResponseData | null {
     : null;
 }
 
+function isSessionCompletedResponse(body: unknown): boolean {
+  return (
+    typeof body === "object" &&
+    body !== null &&
+    "sessionCompleted" in body &&
+    body.sessionCompleted === true
+  );
+}
+
 export function SessionQuestionPage({ sessionId }: SessionQuestionPageProps) {
   const router = useRouter();
   const guessInputRef = useRef<HTMLInputElement>(null);
@@ -379,6 +388,11 @@ export function SessionQuestionPage({ sessionId }: SessionQuestionPageProps) {
         return;
       }
 
+      if (isSessionCompletedResponse(responseBody)) {
+        router.replace(`/sessions/${encodeURIComponent(sessionId)}/complete`);
+        return;
+      }
+
       const guessResponseData = getGuessResponseData(responseBody);
 
       if (!guessResponseData) {
@@ -522,17 +536,18 @@ export function SessionQuestionPage({ sessionId }: SessionQuestionPageProps) {
         <section className={styles.progressCard} aria-label="Session progress">
           <p>
             <strong>{pageData.session.questionsAnsweredCorrectly}</strong> of{" "}
-            <strong>{pageData.session.questionsTotal}</strong> questions answered
-            correctly
+            <strong>{pageData.session.questionsTotal}</strong> questions
+            answered correctly
           </p>
         </section>
       </div>
 
-      <section className={styles.questionCard} aria-labelledby="question-heading">
+      <section
+        className={styles.questionCard}
+        aria-labelledby="question-heading"
+      >
         <p className={styles.eyebrow}>Question</p>
-        <h2 id="question-heading">
-          {pageData.currentQuestion.questionText}
-        </h2>
+        <h2 id="question-heading">{pageData.currentQuestion.questionText}</h2>
 
         <form
           className={styles.answerForm}
@@ -583,7 +598,9 @@ export function SessionQuestionPage({ sessionId }: SessionQuestionPageProps) {
         <section
           className={styles.previousCard}
           aria-labelledby="previous-heading"
-          aria-live={previousSubmission.status === "error" ? "assertive" : "polite"}
+          aria-live={
+            previousSubmission.status === "error" ? "assertive" : "polite"
+          }
         >
           <p className={styles.eyebrow}>Previous Q&amp;A</p>
           <h2 id="previous-heading">Most recent submission</h2>

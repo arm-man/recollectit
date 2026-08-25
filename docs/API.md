@@ -567,6 +567,7 @@ The following data is expected to be loaded by Server Components through server-
 
 - Landing Page active and historical Session lists.
 - Session Creation Subject and Category options.
+- Session Complete page details and Question Accuracy results.
 - The default Subject from the Student's last completed Session.
 
 These server-side data shapes should be kept close to the pages that use them. They do not need public HTTP contracts in this document unless browser-side requirements later make an endpoint useful.

@@ -60,13 +60,37 @@ type ActiveSessionRow = {
   created_at: Date;
 };
 
+type HistoricalSessionRow = {
+  session_id: number;
+  subject_title: string;
+  categories: string[];
+  completed_at: Date;
+  is_abandoned: boolean;
+  session_accuracy: number | null;
+};
+
 type SessionOwnershipRow = {
   student_id: number;
   completed_at: Date | null;
 };
 
-type CompletedSessionRow = {
+type MarkedCompletedSessionRow = {
   completed_at: Date;
+};
+
+type SessionCompleteRow = {
+  student_id: number;
+  completed_at: Date | null;
+  subject_title: string;
+  categories: string[];
+  is_abandoned: boolean;
+  unique_question_count: number;
+  guess_count: number;
+  session_accuracy: number | null;
+  question_id: number;
+  question_text: string;
+  answer_text: string;
+  question_accuracy: number;
 };
 
 type SkipQuestionRow = {
@@ -133,6 +157,32 @@ export type ActiveSession = {
   subject: string;
   categories: string[];
   createdAt: string;
+};
+
+export type HistoricalSession = {
+  sessionId: number;
+  subject: string;
+  categories: string[];
+  completedAt: string;
+  isAbandoned: boolean;
+  sessionAccuracy: number | null;
+};
+
+export type SessionCompleteRecord = {
+  studentId: number;
+  completedAt: Date | null;
+  subject: string;
+  categories: string[];
+  isAbandoned: boolean;
+  uniqueQuestionCount: number;
+  guessCount: number;
+  sessionAccuracy: number | null;
+  questions: {
+    questionId: number;
+    question: string;
+    answer: string;
+    questionAccuracy: number;
+  }[];
 };
 
 export type SessionOwnershipRecord = {
@@ -264,6 +314,48 @@ export async function getActiveSessions(
     subject: row.subject_title,
     categories: row.categories,
     createdAt: row.created_at.toISOString(),
+  }));
+}
+
+export async function getHistoricalSessions(
+  studentId: number,
+): Promise<HistoricalSession[]> {
+  const result = await pool.query<HistoricalSessionRow>(
+    `SELECT
+       sessions.id AS session_id,
+       subjects.title AS subject_title,
+       sessions.completed_at,
+       BOOL_OR(session_questions.completed_at IS NULL) AS is_abandoned,
+       CASE
+         WHEN BOOL_OR(session_questions.completed_at IS NULL) THEN NULL
+         ELSE ROUND(
+           COUNT(*)::numeric / NULLIF(SUM(session_questions.attempts), 0) * 100
+         )::integer
+       END AS session_accuracy,
+       COALESCE(
+         ARRAY_AGG(DISTINCT categories.title ORDER BY categories.title)
+           FILTER (WHERE categories.id IS NOT NULL),
+         ARRAY[]::text[]
+       ) AS categories
+     FROM sessions
+     JOIN subjects ON subjects.id = sessions.subject_id
+     JOIN session_questions ON session_questions.session_id = sessions.id
+     JOIN questions ON questions.id = session_questions.question_id
+     LEFT JOIN categories ON categories.id = questions.category_id
+     WHERE sessions.student_id = $1
+       AND sessions.completed_at IS NOT NULL
+     GROUP BY sessions.id, subjects.title
+     ORDER BY sessions.completed_at DESC, sessions.id DESC`,
+    [studentId],
+  );
+
+  return result.rows.map((row) => ({
+    sessionId: row.session_id,
+    subject: row.subject_title,
+    categories: row.categories,
+    completedAt: row.completed_at.toISOString(),
+    isAbandoned: row.is_abandoned,
+    sessionAccuracy: row.session_accuracy,
   }));
 }
 
@@ -431,18 +523,15 @@ export async function createSessionWithQuestions(
       return { status: "no-eligible-questions" };
     }
 
-    const activeSessionCountResult =
-      await client.query<ActiveSessionCountRow>(
-        `SELECT COUNT(*)::integer AS active_session_count
+    const activeSessionCountResult = await client.query<ActiveSessionCountRow>(
+      `SELECT COUNT(*)::integer AS active_session_count
          FROM sessions
          WHERE student_id = $1
            AND completed_at IS NULL`,
-        [studentId],
-      );
+      [studentId],
+    );
 
-    if (
-      (activeSessionCountResult.rows[0]?.active_session_count ?? 0) >= 5
-    ) {
+    if ((activeSessionCountResult.rows[0]?.active_session_count ?? 0) >= 5) {
       await client.query("ROLLBACK");
       return { status: "active-session-limit-reached" };
     }
@@ -463,10 +552,7 @@ export async function createSessionWithQuestions(
       `INSERT INTO session_questions (session_id, question_id)
        SELECT $1, selected_questions.question_id
        FROM unnest($2::integer[]) AS selected_questions(question_id)`,
-      [
-        sessionId,
-        eligibleQuestionsResult.rows.map((row) => row.question_id),
-      ],
+      [sessionId, eligibleQuestionsResult.rows.map((row) => row.question_id)],
     );
 
     await client.query("COMMIT");
@@ -599,6 +685,113 @@ export async function getSessionOwnershipRecord(
   return row
     ? { studentId: row.student_id, completedAt: row.completed_at }
     : null;
+}
+
+export async function getSessionCompleteRecord(
+  sessionId: number,
+): Promise<SessionCompleteRecord | null> {
+  const result = await pool.query<SessionCompleteRow>(
+    `WITH selected_session AS (
+       SELECT
+         sessions.id,
+         sessions.student_id,
+         sessions.completed_at,
+         subjects.title AS subject_title
+       FROM sessions
+       JOIN subjects ON subjects.id = sessions.subject_id
+       WHERE sessions.id = $1
+     ),
+     session_summary AS (
+       SELECT
+         COUNT(*)::integer AS unique_question_count,
+         COALESCE(SUM(attempts), 0)::integer AS guess_count,
+         BOOL_OR(completed_at IS NULL) AS is_abandoned
+       FROM session_questions
+       WHERE session_id = $1
+     ),
+     session_categories AS (
+       SELECT COALESCE(
+         ARRAY_AGG(DISTINCT categories.title ORDER BY categories.title)
+           FILTER (WHERE categories.id IS NOT NULL),
+         ARRAY[]::text[]
+       ) AS categories
+       FROM session_questions
+       JOIN questions ON questions.id = session_questions.question_id
+       LEFT JOIN categories ON categories.id = questions.category_id
+       WHERE session_questions.session_id = $1
+     ),
+     student_question_history AS (
+       SELECT
+         historical_questions.question_id,
+         COALESCE(
+           COUNT(*) FILTER (
+             WHERE historical_questions.completed_at IS NOT NULL
+           )::numeric / NULLIF(SUM(historical_questions.attempts), 0),
+           0
+         ) AS accuracy
+       FROM session_questions AS historical_questions
+       JOIN sessions AS historical_sessions
+         ON historical_sessions.id = historical_questions.session_id
+       JOIN selected_session
+         ON selected_session.student_id = historical_sessions.student_id
+       GROUP BY historical_questions.question_id
+     )
+     SELECT
+       selected_session.student_id,
+       selected_session.completed_at,
+       selected_session.subject_title,
+       session_categories.categories,
+       session_summary.is_abandoned,
+       session_summary.unique_question_count,
+       session_summary.guess_count,
+       CASE
+         WHEN session_summary.is_abandoned THEN NULL
+         ELSE ROUND(
+           session_summary.unique_question_count::numeric
+             / NULLIF(session_summary.guess_count, 0) * 100
+         )::integer
+       END AS session_accuracy,
+       questions.id AS question_id,
+       questions.question_text,
+       questions.answer_text,
+       ROUND(student_question_history.accuracy * 100)::integer
+         AS question_accuracy
+     FROM selected_session
+     CROSS JOIN session_summary
+     CROSS JOIN session_categories
+     JOIN session_questions
+       ON session_questions.session_id = selected_session.id
+     JOIN questions ON questions.id = session_questions.question_id
+     JOIN student_question_history
+       ON student_question_history.question_id = questions.id
+     ORDER BY
+       student_question_history.accuracy,
+       questions.question_text,
+       questions.id`,
+    [sessionId],
+  );
+  const firstRow = result.rows[0];
+
+  if (!firstRow) {
+    return null;
+  }
+
+  return {
+    studentId: firstRow.student_id,
+    completedAt: firstRow.completed_at,
+    subject: firstRow.subject_title,
+    categories: firstRow.categories,
+    isAbandoned: firstRow.is_abandoned,
+    uniqueQuestionCount: firstRow.unique_question_count,
+    guessCount: firstRow.guess_count,
+    sessionAccuracy: firstRow.session_accuracy,
+    questions: result.rows.map((row) => ({
+      questionId: row.question_id,
+      question: row.question_text,
+      answer: row.answer_text,
+      questionAccuracy: row.question_accuracy,
+    })),
+  };
 }
 
 export async function getSkipQuestionRecord(
@@ -874,7 +1067,7 @@ export async function markSessionCompleted(
   sessionId: number,
   studentId: number,
 ): Promise<Date | null> {
-  const result = await pool.query<CompletedSessionRow>(
+  const result = await pool.query<MarkedCompletedSessionRow>(
     `UPDATE sessions
      SET completed_at = NOW()
      WHERE id = $1

@@ -85,7 +85,9 @@ Primary product success measure: students study regularly.
     - The "Abandon" button should prompt the Student to confirm that they want to Abandon the Session before the Session is actually abandoned.
     - Abandoning a Session marks the Session as completed. The Session is retained in history along with its accumulated Attempt counts and their effect on Question Accuracy. Individual Guesses are not retained.    
   - A section that lists historical Sessions, in order of most recently completed first.
-    - For each historical session, show the Subject, Categories (if applicable), completion date, and Session Accuracy.
+    - For each historical Session, show the Subject, Categories (if applicable), completion date, and Session Accuracy.
+    - If a historical Session was abandoned, show an "Abandoned" label instead of Session Accuracy.
+    - The historical Session is click-able, and when clicked, direct them to the Session Complete page.
     - If there are no historical Sessions, this section will simply show a note saying "No completed sessions.".
 
 ## Session Creation
@@ -153,6 +155,7 @@ Primary product success measure: students study regularly.
 - A skipped Question remains pending in the current Round, and a different pending Question is selected randomly. The skipped Question must be presented and Attempted later before the Round can end.
 - If the current Question is the only pending Question to be asked in the Round, the **Skip for now** button will show an error message.
 - For errors returned by the server, show a short message and attempt to reload the state and display a valid Question.
+- A Session ends immediately after the Student correctly answers the last incomplete Question. At the end of the Session, immediately redirect the Student to the Session Complete page.
 
 ## Question Ordering and Rounds
 
@@ -198,18 +201,17 @@ For one Student and Question:
 - Question Accuracy = Correct Attempts / Total Attempts.
 - If Total Attempts is zero, Accuracy is 0%.
 
-## Session Completion
+## Session Complete
 
-A Session ends immediately after the Student correctly answers the last incomplete Question. The Session end screen will display:
+The Session end screen will display:
 - Confirmation that the Session has ended.
-- Number of unique Questions in the Session.
-- Number of Guesses submitted, where skipped questions do not count as Guesses.
-- Session Accuracy, rounded to the nearest integer, where `Session Accuracy = Unique Questions / Guesses * 100`
-
-Example:
-- Unique Questions: `20`
-- Total Guesses: `25`
-- Session Accuracy: `80%`
+- If the Session was abandoned, note that it was abandoned. Abandonment is true if any Question from the Session remains incomplete.
+- Show the Session's Subject, Categories (if applicable), and completion date.
+- Show the Session Accuracy, rounded to the nearest integer, where `Session Accuracy = Unique Questions / Guesses * 100`. Also show the number of unique Questions in the Session, and number of Guesses submitted. If the Session was abandoned, do not show Session Accuracy.
+- Show a table with the following columns: Question, Answer, Question Accuracy. The table is sorted by Question Accuracy ascending. If the Session was abandoned, do not show this table.
+- If the page is loaded but the Session is not complete, show an error indicating that the Session is still in progress. Do not show any other info that would normally be shown for a completed Session.
+- Since this is a static page with no interaction, except clicking the wordmark to go back to the Landing page, if errors occur, display an error, log the error in the logs table, but do not try to reload or attempt to correct the problem.
+- The page should be retrieved via a Server Component, not an API
 
 ## Mobile Requirements
 

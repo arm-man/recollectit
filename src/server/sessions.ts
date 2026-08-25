@@ -6,6 +6,7 @@ import {
   doCategoriesBelongToSubject,
   doesSubjectExist,
   getGuessQuestionRecord,
+  getSessionCompleteRecord,
   getSessionOwnershipRecord,
   getSessionPageRecord,
   getSkipQuestionRecord,
@@ -123,6 +124,29 @@ export type SubmitGuessResult =
   | { status: "question-not-in-session" }
   | { status: "question-already-completed" };
 
+export type GetSessionCompleteResult =
+  | {
+      status: "success";
+      session: {
+        completedAt: Date;
+        subject: string;
+        categories: string[];
+        isAbandoned: boolean;
+        uniqueQuestionCount: number;
+        guessCount: number;
+        sessionAccuracy: number | null;
+        questions: {
+          questionId: number;
+          question: string;
+          answer: string;
+          questionAccuracy: number;
+        }[];
+      };
+    }
+  | { status: "not-found" }
+  | { status: "forbidden" }
+  | { status: "in-progress" };
+
 export async function previewSessionQuestionCount(
   studentId: number,
   subjectId: number,
@@ -230,6 +254,39 @@ export async function getSession(
   };
 }
 
+export async function getSessionComplete(
+  studentId: number,
+  sessionId: number,
+): Promise<GetSessionCompleteResult> {
+  const record = await getSessionCompleteRecord(sessionId);
+
+  if (!record) {
+    return { status: "not-found" };
+  }
+
+  if (record.studentId !== studentId) {
+    return { status: "forbidden" };
+  }
+
+  if (record.completedAt === null) {
+    return { status: "in-progress" };
+  }
+
+  return {
+    status: "success",
+    session: {
+      completedAt: record.completedAt,
+      subject: record.subject,
+      categories: record.categories,
+      isAbandoned: record.isAbandoned,
+      uniqueQuestionCount: record.uniqueQuestionCount,
+      guessCount: record.guessCount,
+      sessionAccuracy: record.sessionAccuracy,
+      questions: record.questions,
+    },
+  };
+}
+
 export async function abandonSession(
   studentId: number,
   sessionId: number,
@@ -330,7 +387,10 @@ export async function submitGuess(
     return { status: "completed" };
   }
 
-  if (questionRecord.questionId === null || questionRecord.answerText === null) {
+  if (
+    questionRecord.questionId === null ||
+    questionRecord.answerText === null
+  ) {
     return { status: "question-not-in-session" };
   }
 
