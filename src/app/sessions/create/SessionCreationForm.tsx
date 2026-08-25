@@ -14,6 +14,7 @@ type CategoryOption = {
 type SubjectOption = {
   id: number;
   title: string;
+  hasAttemptedQuestions: boolean;
   categories: CategoryOption[];
 };
 
@@ -94,6 +95,13 @@ export function SessionCreationForm({
 
   const selectedSubject =
     subjects.find((subject) => subject.id === subjectId) ?? null;
+  const canFilterByAccuracy = selectedSubject?.hasAttemptedQuestions ?? false;
+  // The API requires Accuracy fields when Ask All Questions is unchecked, so
+  // use the documented non-restrictive value while the control is hidden.
+  const effectiveAccuracyOperator = canFilterByAccuracy
+    ? accuracyOperator
+    : "lte";
+  const effectiveAccuracyPercent = canFilterByAccuracy ? accuracyPercent : 100;
 
   useEffect(() => {
     if (subjectId === null) {
@@ -113,8 +121,8 @@ export function SessionCreationForm({
         : {
             askAllQuestions: false,
             categoryIds: selectedCategoryIds,
-            accuracyOperator,
-            accuracyPercent,
+            accuracyOperator: effectiveAccuracyOperator,
+            accuracyPercent: effectiveAccuracyPercent,
           };
 
       try {
@@ -163,9 +171,9 @@ export function SessionCreationForm({
 
     return () => controller.abort();
   }, [
-    accuracyOperator,
-    accuracyPercent,
     askAllQuestions,
+    effectiveAccuracyOperator,
+    effectiveAccuracyPercent,
     router,
     selectedCategoryIds,
     subjectId,
@@ -211,8 +219,8 @@ export function SessionCreationForm({
       : {
           askAllQuestions: false,
           categoryIds: selectedCategoryIds,
-          accuracyOperator,
-          accuracyPercent,
+          accuracyOperator: effectiveAccuracyOperator,
+          accuracyPercent: effectiveAccuracyPercent,
         };
 
     startRequestPending.current = true;
@@ -343,43 +351,45 @@ export function SessionCreationForm({
               </fieldset>
             ) : null}
 
-            <fieldset className={styles.accuracyFieldset}>
-              <legend>Question Accuracy</legend>
-              <div className={styles.accuracyControls}>
-                <span aria-hidden="true">Question Accuracy:</span>
-                <label>
-                  <span className={styles.visuallyHidden}>Comparison</span>
-                  <select
-                    value={accuracyOperator}
-                    onChange={(event) => {
-                      const nextOperator = event.target.value;
+            {canFilterByAccuracy ? (
+              <fieldset className={styles.accuracyFieldset}>
+                <legend>Question Accuracy</legend>
+                <div className={styles.accuracyControls}>
+                  <span aria-hidden="true">Question Accuracy:</span>
+                  <label>
+                    <span className={styles.visuallyHidden}>Comparison</span>
+                    <select
+                      value={accuracyOperator}
+                      onChange={(event) => {
+                        const nextOperator = event.target.value;
 
-                      if (nextOperator === "lte" || nextOperator === "gte") {
-                        setAccuracyOperator(nextOperator);
+                        if (nextOperator === "lte" || nextOperator === "gte") {
+                          setAccuracyOperator(nextOperator);
+                        }
+                      }}
+                    >
+                      <option value="lte">≤</option>
+                      <option value="gte">≥</option>
+                    </select>
+                  </label>
+                  <label>
+                    <span className={styles.visuallyHidden}>Percentage</span>
+                    <select
+                      value={accuracyPercent}
+                      onChange={(event) =>
+                        setAccuracyPercent(Number(event.target.value))
                       }
-                    }}
-                  >
-                    <option value="lte">≤</option>
-                    <option value="gte">≥</option>
-                  </select>
-                </label>
-                <label>
-                  <span className={styles.visuallyHidden}>Percentage</span>
-                  <select
-                    value={accuracyPercent}
-                    onChange={(event) =>
-                      setAccuracyPercent(Number(event.target.value))
-                    }
-                  >
-                    {ACCURACY_PERCENTAGES.map((percentage) => (
-                      <option value={percentage} key={percentage}>
-                        {percentage}%
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              </div>
-            </fieldset>
+                    >
+                      {ACCURACY_PERCENTAGES.map((percentage) => (
+                        <option value={percentage} key={percentage}>
+                          {percentage}%
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+              </fieldset>
+            ) : null}
           </div>
         ) : null}
 

@@ -10,6 +10,7 @@ export type SessionCreationCategory = {
 export type SessionCreationSubject = {
   id: number;
   title: string;
+  hasAttemptedQuestions: boolean;
   categories: SessionCreationCategory[];
 };
 
@@ -18,6 +19,7 @@ type SessionCreationOptionRow = {
   subject_title: string;
   category_id: number | null;
   category_title: string | null;
+  has_attempted_questions: boolean;
 };
 
 type DefaultSubjectRow = {
@@ -235,14 +237,26 @@ export async function getSessionCreationPageData(
 ): Promise<SessionCreationPageData> {
   const [optionsResult, defaultSubjectResult] = await Promise.all([
     pool.query<SessionCreationOptionRow>(
-      `SELECT
+      `WITH attempted_subjects AS (
+         SELECT DISTINCT sessions.subject_id
+         FROM sessions
+         JOIN session_questions
+           ON session_questions.session_id = sessions.id
+         WHERE sessions.student_id = $1
+           AND session_questions.attempts > 0
+       )
+       SELECT
          subjects.id AS subject_id,
          subjects.title AS subject_title,
          categories.id AS category_id,
-         categories.title AS category_title
+         categories.title AS category_title,
+         attempted_subjects.subject_id IS NOT NULL AS has_attempted_questions
        FROM subjects
        LEFT JOIN categories ON categories.subject_id = subjects.id
+       LEFT JOIN attempted_subjects
+         ON attempted_subjects.subject_id = subjects.id
        ORDER BY subjects.title, subjects.id, categories.title`,
+      [studentId],
     ),
     pool.query<DefaultSubjectRow>(
       `SELECT subject_id
@@ -264,6 +278,7 @@ export async function getSessionCreationPageData(
       subject = {
         id: row.subject_id,
         title: row.subject_title,
+        hasAttemptedQuestions: row.has_attempted_questions,
         categories: [],
       };
       subjects.push(subject);

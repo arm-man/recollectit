@@ -102,6 +102,7 @@ Primary product success measure: students study regularly.
   - A checkbox with **Ask All Questions**.
   - A multi-select List Box to select a Category if the Subject has one or more Categories, otherwise the Category list box is not visible.
   - A Question Accuracy filter displayed as **Question Accuracy: X Y**, where X is a dropdown menu to select `<=` or `>=` and Y is a dropdown menu to select a percentage from 0% to 100% in increments of 10%.
+    - If the Student has never Attempted any Question from the selected Subject, the Question Accuracy filter is hidden and Question Accuracy does not restrict the eligible Questions.
     - Implementation details can be altered as long as the spirit of the feature is maintained.
     - Example: If Question Accuracy <= 40% is selected, only Questions with an Accuracy of 40% or less are included.
   - A button called **Home** that takes the Student to the Landing Page.
