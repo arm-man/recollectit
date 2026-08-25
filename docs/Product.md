@@ -117,7 +117,7 @@ Primary product success measure: students study regularly.
 - No Categories are selected by default.
 - The Category list box user experience should be designed so it is easy to de-select a Category, including de-selecting a Category so there are zero selected.
 - X will default to `<=`.
-- Y will default to `60%`.
+- Y will default to `50%`.
 - If one or more Categories are selected, only Questions matching the selected Categories will be included in the Session.
 - If no Categories are selected, all Questions in the selected Subject are eligible, including uncategorized Questions.
 - The Student cannot filter specifically for uncategorized Questions.

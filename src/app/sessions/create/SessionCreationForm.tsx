@@ -82,7 +82,7 @@ export function SessionCreationForm({
   const [accuracyOperator, setAccuracyOperator] = useState<"lte" | "gte">(
     "lte",
   );
-  const [accuracyPercent, setAccuracyPercent] = useState(60);
+  const [accuracyPercent, setAccuracyPercent] = useState(50);
   const [questionCount, setQuestionCount] = useState<number | null>(
     defaultSubjectId === null ? 0 : null,
   );
