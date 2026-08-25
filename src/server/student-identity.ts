@@ -38,3 +38,9 @@ export async function setCurrentStudentCookie(
     maxAge: COOKIE_MAX_AGE_SECONDS,
   });
 }
+
+export async function clearCurrentStudentCookie(): Promise<void> {
+  const cookieStore = await cookies();
+
+  cookieStore.delete(CURRENT_STUDENT_COOKIE);
+}

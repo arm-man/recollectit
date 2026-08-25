@@ -76,6 +76,9 @@ Primary product success measure: students study regularly.
 
 - After a Student logs in with their Username, the Student is presented with:
   - The Recollect It wordmark in the upper left.
+  - A Log Out button in the upper right.
+    - Logging out ends the Student's current browser identity and returns the Student to the Log In page.
+    - Logging out does not abandon active Sessions or otherwise change the Student's saved data.
   - The Student's Username.
   - A highlighted section with a single button to create a new Session.
   - A section that lists all active Sessions, along with a "Resume" button and "Abandon" button next to each active Session.

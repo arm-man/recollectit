@@ -28,6 +28,11 @@ export default async function LandingPage() {
           <span>Recollect</span>
           <span className={styles.wordmarkAccent}>It</span>
         </div>
+        <form action="/api/logout" method="post">
+          <button className={styles.logoutButton} type="submit">
+            Log Out
+          </button>
+        </form>
       </header>
 
       <main className={styles.main}>

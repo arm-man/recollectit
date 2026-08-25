@@ -24,6 +24,7 @@ Recollect It is a single Next.js application. The endpoints in this document are
 The initial API contains endpoints for:
 
 - Logging in.
+- Logging out.
 - Creating a Student.
 - Previewing the number of Questions eligible for a new Session.
 - Starting a Session.
@@ -94,6 +95,7 @@ When a timestamp is needed in a response, return it as an ISO 8601 UTC string, f
 - `200 OK` for successful actions and previews.
 - `201 Created` when a Student or Session is created.
 - `204 No Content` for a successful login.
+- `303 See Other` after a successful logout, redirecting the browser to the Student Access page.
 
 ### Error Shape
 
@@ -229,6 +231,18 @@ Expected errors:
 | --- | --- | --- |
 | `400` | `INVALID_USERNAME` | Username fails format or length validation. |
 | `404` | `USERNAME_NOT_FOUND` | No exact normalized Username exists. |
+
+### Log Out
+
+```http
+POST /api/logout
+```
+
+Deletes the server-set current-Student cookie. Logging out does not change any Student or Session data.
+
+The request has no body. The operation is idempotent and succeeds even when the current-Student cookie is already missing or invalid.
+
+Success response — `303 See Other` with `Location: /`. The redirect causes the browser to retrieve the Student Access page with a `GET` request after the cookie has been deleted.
 
 ### Create Student
 
