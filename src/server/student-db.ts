@@ -20,6 +20,19 @@ export async function findStudentById(
   return result.rows[0] ?? null;
 }
 
+export async function findStudentByUsername(
+  username: string,
+): Promise<Student | null> {
+  const result = await pool.query<Student>(
+    `SELECT id, username
+     FROM students
+     WHERE username = $1`,
+    [username],
+  );
+
+  return result.rows[0] ?? null;
+}
+
 export async function doesStudentUsernameExist(
   username: string,
 ): Promise<boolean> {

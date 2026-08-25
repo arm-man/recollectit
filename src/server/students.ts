@@ -2,6 +2,7 @@ import "server-only";
 
 import {
   doesStudentUsernameExist,
+  findStudentByUsername,
   insertStudent,
   type Student,
 } from "@/server/student-db";
@@ -14,6 +15,11 @@ export type CreateStudentResult =
   | { status: "created"; student: Student }
   | { status: "invalid" }
   | { status: "duplicate"; username: string };
+
+export type LoginStudentResult =
+  | { status: "found"; student: Student }
+  | { status: "invalid" }
+  | { status: "not-found" };
 
 export function normalizeUsername(username: string): string {
   return username.trim().normalize("NFC");
@@ -50,4 +56,22 @@ export async function createStudent(
   }
 
   return { status: "created", student };
+}
+
+export async function findStudentForLogin(
+  submittedUsername: string,
+): Promise<LoginStudentResult> {
+  const username = submittedUsername.normalize("NFC");
+
+  if (!isValidUsername(username)) {
+    return { status: "invalid" };
+  }
+
+  const student = await findStudentByUsername(username);
+
+  if (!student) {
+    return { status: "not-found" };
+  }
+
+  return { status: "found", student };
 }

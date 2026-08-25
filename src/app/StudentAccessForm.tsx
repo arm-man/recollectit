@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, type FormEvent, type KeyboardEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./page.module.css";
 
@@ -10,6 +10,7 @@ const CONTROL_OR_FORMATTING_PATTERN = /[\p{Cc}\p{Cf}]/u;
 const INVALID_USERNAME_MESSAGE = "Username fails format or length validation.";
 const DUPLICATE_USERNAME_MESSAGE =
   "The Username already exists, please create a different Username.";
+const USERNAME_NOT_FOUND_MESSAGE = "That Username does not exist.";
 const GENERIC_ERROR_MESSAGE = "Something went wrong. Please try again.";
 
 function getUsernameErrors(username: string, shouldTrim = false): string[] {
@@ -39,16 +40,6 @@ function getUsernameErrors(username: string, shouldTrim = false): string[] {
   return errors;
 }
 
-function preventSubmission(event: FormEvent<HTMLFormElement>) {
-  event.preventDefault();
-}
-
-function preventEnterSubmission(event: KeyboardEvent<HTMLInputElement>) {
-  if (event.key === "Enter") {
-    event.preventDefault();
-  }
-}
-
 function getResponseErrorCode(body: unknown): string | null {
   if (typeof body !== "object" || body === null || !("error" in body)) {
     return null;
@@ -65,14 +56,19 @@ function getResponseErrorCode(body: unknown): string | null {
 
 export function StudentAccessForm() {
   const router = useRouter();
+  const isLoggingInRef = useRef(false);
   const isCreatingStudentRef = useRef(false);
   const [loginUsername, setLoginUsername] = useState("");
   const [createUsername, setCreateUsername] = useState("");
   const [hasTouchedLogin, setHasTouchedLogin] = useState(false);
   const [hasTouchedCreate, setHasTouchedCreate] = useState(false);
+  const [loginRequestError, setLoginRequestError] = useState<string | null>(
+    null,
+  );
   const [createRequestError, setCreateRequestError] = useState<string | null>(
     null,
   );
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [isCreatingStudent, setIsCreatingStudent] = useState(false);
 
   const loginErrors = getUsernameErrors(loginUsername);
@@ -81,6 +77,48 @@ export function StudentAccessForm() {
     hasTouchedLogin || loginUsername.length > 0 ? loginErrors : [];
   const visibleCreateErrors =
     hasTouchedCreate || createUsername.length > 0 ? createErrors : [];
+
+  async function loginStudent(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setHasTouchedLogin(true);
+    setLoginRequestError(null);
+
+    if (loginErrors.length > 0 || isLoggingInRef.current) {
+      return;
+    }
+
+    isLoggingInRef.current = true;
+    setIsLoggingIn(true);
+
+    try {
+      const response = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: loginUsername }),
+      });
+
+      if (response.ok) {
+        router.push("/landing");
+        return;
+      }
+
+      const responseBody: unknown = await response.json().catch(() => null);
+      const errorCode = getResponseErrorCode(responseBody);
+
+      if (errorCode === "INVALID_USERNAME") {
+        setLoginRequestError(INVALID_USERNAME_MESSAGE);
+      } else if (errorCode === "USERNAME_NOT_FOUND") {
+        setLoginRequestError(USERNAME_NOT_FOUND_MESSAGE);
+      } else {
+        setLoginRequestError(GENERIC_ERROR_MESSAGE);
+      }
+    } catch {
+      setLoginRequestError(GENERIC_ERROR_MESSAGE);
+    } finally {
+      isLoggingInRef.current = false;
+      setIsLoggingIn(false);
+    }
+  }
 
   async function createStudent(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -153,8 +191,9 @@ export function StudentAccessForm() {
 
             <form
               className={styles.form}
-              onSubmit={preventSubmission}
+              onSubmit={loginStudent}
               noValidate
+              aria-busy={isLoggingIn}
             >
               <div className={styles.field}>
                 <label htmlFor="login-username">Username</label>
@@ -167,11 +206,15 @@ export function StudentAccessForm() {
                   spellCheck={false}
                   required
                   value={loginUsername}
-                  aria-invalid={visibleLoginErrors.length > 0}
+                  aria-invalid={
+                    visibleLoginErrors.length > 0 || loginRequestError !== null
+                  }
                   aria-describedby="login-errors"
                   onBlur={() => setHasTouchedLogin(true)}
-                  onChange={(event) => setLoginUsername(event.target.value)}
-                  onKeyDown={preventEnterSubmission}
+                  onChange={(event) => {
+                    setLoginUsername(event.target.value);
+                    setLoginRequestError(null);
+                  }}
                 />
                 <div
                   id="login-errors"
@@ -183,11 +226,17 @@ export function StudentAccessForm() {
                       {error}
                     </p>
                   ))}
+                  {loginRequestError ? (
+                    <p className={styles.error}>{loginRequestError}</p>
+                  ) : null}
                 </div>
               </div>
 
-              <button type="submit" disabled={loginErrors.length > 0}>
-                Log In
+              <button
+                type="submit"
+                disabled={loginErrors.length > 0 || isLoggingIn}
+              >
+                {isLoggingIn ? "Logging In…" : "Log In"}
               </button>
             </form>
           </section>
@@ -200,8 +249,8 @@ export function StudentAccessForm() {
               <p className={styles.cardLabel}>New student</p>
               <h2 id="create-heading">Create User</h2>
               <p>
-                To get started, choose a unique, case-sensitive username. Your
-                email address is a convenient option.
+                To get started, choose a unique, case-sensitive username. For
+                example, &apos;Wade&apos; is an excellent choice.
               </p>
             </div>
 
