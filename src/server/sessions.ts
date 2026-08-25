@@ -7,6 +7,7 @@ import {
   doesSubjectExist,
   getSessionOwnershipRecord,
   getSessionPageRecord,
+  getSkipQuestionRecord,
   markSessionCompleted,
 } from "@/server/session-db";
 
@@ -62,6 +63,26 @@ export type AbandonSessionResult =
   | { status: "not-found" }
   | { status: "forbidden" }
   | { status: "completed" };
+
+export type SkipQuestionResult =
+  | {
+      status: "success";
+      currentQuestion: {
+        questionId: number;
+        questionText: string;
+      };
+      session: {
+        roundNumber: number;
+        questionsAnsweredCorrectly: number;
+        questionsTotal: number;
+      };
+    }
+  | { status: "not-found" }
+  | { status: "forbidden" }
+  | { status: "completed" }
+  | { status: "question-not-in-session" }
+  | { status: "question-not-pending" }
+  | { status: "skip-not-available" };
 
 export async function previewSessionQuestionCount(
   studentId: number,
@@ -193,4 +214,59 @@ export async function abandonSession(
   return completedAt
     ? { status: "success", completedAt }
     : { status: "completed" };
+}
+
+export async function skipQuestion(
+  studentId: number,
+  sessionId: number,
+  questionId: number,
+): Promise<SkipQuestionResult> {
+  const sessionRecord = await getSessionOwnershipRecord(sessionId);
+
+  if (!sessionRecord) {
+    return { status: "not-found" };
+  }
+
+  if (sessionRecord.studentId !== studentId) {
+    return { status: "forbidden" };
+  }
+
+  if (sessionRecord.completedAt !== null) {
+    return { status: "completed" };
+  }
+
+  const skipRecord = await getSkipQuestionRecord(sessionId, questionId);
+
+  if (skipRecord.sessionCompletedAt !== null) {
+    return { status: "completed" };
+  }
+
+  if (skipRecord.questionAttempts === null) {
+    return { status: "question-not-in-session" };
+  }
+
+  if (
+    skipRecord.questionCompletedAt !== null ||
+    skipRecord.minimumPendingAttempts === null ||
+    skipRecord.questionAttempts !== skipRecord.minimumPendingAttempts
+  ) {
+    return { status: "question-not-pending" };
+  }
+
+  if (
+    skipRecord.replacementQuestion === null ||
+    skipRecord.roundNumber === null
+  ) {
+    return { status: "skip-not-available" };
+  }
+
+  return {
+    status: "success",
+    currentQuestion: skipRecord.replacementQuestion,
+    session: {
+      roundNumber: skipRecord.roundNumber,
+      questionsAnsweredCorrectly: skipRecord.questionsAnsweredCorrectly,
+      questionsTotal: skipRecord.questionsTotal,
+    },
+  };
 }

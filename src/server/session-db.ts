@@ -69,6 +69,18 @@ type CompletedSessionRow = {
   completed_at: Date;
 };
 
+type SkipQuestionRow = {
+  session_completed_at: Date | null;
+  question_attempts: number | null;
+  question_completed_at: Date | null;
+  minimum_pending_attempts: number | null;
+  maximum_pending_attempts: number | null;
+  replacement_question_id: number | null;
+  replacement_question_text: string | null;
+  questions_answered_correctly: number;
+  questions_total: number;
+};
+
 export type SessionCreationPageData = {
   subjects: SessionCreationSubject[];
   defaultSubjectId: number | null;
@@ -103,6 +115,20 @@ export type ActiveSession = {
 export type SessionOwnershipRecord = {
   studentId: number;
   completedAt: Date | null;
+};
+
+export type SkipQuestionRecord = {
+  sessionCompletedAt: Date | null;
+  questionAttempts: number | null;
+  questionCompletedAt: Date | null;
+  minimumPendingAttempts: number | null;
+  replacementQuestion: {
+    questionId: number;
+    questionText: string;
+  } | null;
+  roundNumber: number | null;
+  questionsAnsweredCorrectly: number;
+  questionsTotal: number;
 };
 
 export async function getSessionCreationPageData(
@@ -524,6 +550,102 @@ export async function getSessionOwnershipRecord(
   return row
     ? { studentId: row.student_id, completedAt: row.completed_at }
     : null;
+}
+
+export async function getSkipQuestionRecord(
+  sessionId: number,
+  questionId: number,
+): Promise<SkipQuestionRecord> {
+  const result = await pool.query<SkipQuestionRow>(
+    `WITH selected_session AS (
+       SELECT completed_at AS session_completed_at
+       FROM sessions
+       WHERE id = $1
+     ),
+     session_state AS (
+       SELECT
+         COUNT(*)::integer AS questions_total,
+         COUNT(*) FILTER (
+           WHERE completed_at IS NOT NULL
+         )::integer AS questions_answered_correctly,
+         MIN(attempts) FILTER (
+           WHERE completed_at IS NULL
+         )::integer AS minimum_pending_attempts,
+         MAX(attempts) FILTER (
+           WHERE completed_at IS NULL
+         )::integer AS maximum_pending_attempts
+       FROM session_questions
+       WHERE session_id = $1
+     ),
+     selected_question AS (
+       SELECT
+         attempts AS question_attempts,
+         completed_at AS question_completed_at
+       FROM session_questions
+       WHERE session_id = $1
+         AND question_id = $2
+     ),
+     replacement_question AS (
+       SELECT
+         questions.id AS replacement_question_id,
+         questions.question_text AS replacement_question_text
+       FROM session_questions
+       JOIN questions ON questions.id = session_questions.question_id
+       CROSS JOIN session_state
+       WHERE session_questions.session_id = $1
+         AND session_questions.question_id <> $2
+         AND session_questions.completed_at IS NULL
+         AND session_questions.attempts = session_state.minimum_pending_attempts
+       ORDER BY RANDOM()
+       LIMIT 1
+     )
+     SELECT
+       selected_session.session_completed_at,
+       selected_question.question_attempts,
+       selected_question.question_completed_at,
+       session_state.minimum_pending_attempts,
+       session_state.maximum_pending_attempts,
+       replacement_question.replacement_question_id,
+       replacement_question.replacement_question_text,
+       session_state.questions_answered_correctly,
+       session_state.questions_total
+     FROM selected_session
+     CROSS JOIN session_state
+     LEFT JOIN selected_question ON TRUE
+     LEFT JOIN replacement_question ON TRUE`,
+    [sessionId, questionId],
+  );
+  const row = result.rows[0];
+
+  if (!row) {
+    throw new Error("Skip state query did not return a row.");
+  }
+
+  const roundNumber =
+    row.minimum_pending_attempts === null ||
+    row.maximum_pending_attempts === null
+      ? null
+      : row.minimum_pending_attempts === row.maximum_pending_attempts
+        ? row.minimum_pending_attempts + 1
+        : row.maximum_pending_attempts;
+
+  return {
+    sessionCompletedAt: row.session_completed_at,
+    questionAttempts: row.question_attempts,
+    questionCompletedAt: row.question_completed_at,
+    minimumPendingAttempts: row.minimum_pending_attempts,
+    replacementQuestion:
+      row.replacement_question_id === null ||
+      row.replacement_question_text === null
+        ? null
+        : {
+            questionId: row.replacement_question_id,
+            questionText: row.replacement_question_text,
+          },
+    roundNumber,
+    questionsAnsweredCorrectly: row.questions_answered_correctly,
+    questionsTotal: row.questions_total,
+  };
 }
 
 export async function markSessionCompleted(

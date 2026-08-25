@@ -213,7 +213,7 @@
   box-shadow: 0 8px 18px rgb(49 90 120 / 18%);
 }
 
-.skipButton:hover {
+.skipButton:hover:not(:disabled) {
   border-color: var(--color-text-muted);
 }
 
@@ -226,6 +226,19 @@
 .submitButton:focus-visible {
   outline: 3px solid var(--color-selection);
   outline-offset: 3px;
+}
+
+.skipButton:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.actionError {
+  margin-top: 12px;
+  color: var(--color-error);
+  font-size: 0.88rem;
+  font-weight: 650;
+  line-height: 1.45;
 }
 
 .loadingMessage {
