@@ -54,7 +54,6 @@
   max-width: 620px;
 }
 
-.eyebrow,
 .cardHeading > p {
   color: var(--color-accent);
   font-size: 0.75rem;
@@ -64,18 +63,10 @@
 }
 
 .introduction h1 {
-  margin-top: 8px;
   color: var(--color-text);
   font-size: clamp(2.1rem, 6vw, 3.25rem);
   line-height: 1.06;
   letter-spacing: -0.045em;
-}
-
-.introduction > p:last-child {
-  margin-top: 12px;
-  color: var(--color-text-muted);
-  font-size: 1.04rem;
-  line-height: 1.55;
 }
 
 .countCard,
@@ -96,10 +87,18 @@
   background: var(--color-accent-soft);
 }
 
-.countCard > p:first-child {
+.countExplanation > p:first-child {
   color: var(--color-text-muted);
   font-weight: 700;
   line-height: 1.4;
+}
+
+.countExplanation > p:last-child {
+  max-width: 520px;
+  margin-top: 7px;
+  color: var(--color-text-muted);
+  font-size: 0.88rem;
+  line-height: 1.5;
 }
 
 .questionCount {
@@ -275,12 +274,6 @@
   align-items: center;
   gap: 8px;
   margin-top: 12px;
-}
-
-.accuracyControls > span {
-  width: 100%;
-  color: var(--color-text-muted);
-  font-size: 0.83rem;
 }
 
 .accuracyControls select {

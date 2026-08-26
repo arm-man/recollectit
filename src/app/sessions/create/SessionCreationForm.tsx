@@ -269,13 +269,19 @@ export function SessionCreationForm({
   return (
     <main className={styles.main}>
       <div className={styles.introduction}>
-        <p className={styles.eyebrow}>Session Creation</p>
         <h1>Create a new Session</h1>
-        <p>Choose the Questions you want to practice.</p>
       </div>
 
       <section className={styles.countCard} aria-labelledby="question-count">
-        <p>Total Questions to be asked</p>
+        <div className={styles.countExplanation}>
+          <p>Total Questions to be asked</p>
+          <p>
+            A Session continues until every Question is answered correctly.
+            Round 1 includes every Question; each later Round includes only the
+            Questions missed in the previous Round. This repeats until no
+            Questions remain.
+          </p>
+        </div>
         <p
           id="question-count"
           className={styles.questionCount}
@@ -333,7 +339,7 @@ export function SessionCreationForm({
               <fieldset className={styles.categoryFieldset}>
                 <legend>Categories</legend>
                 <p>
-                  Select any Categories to limit the Questions. Leave all
+                  Select Categories to limit the Questions. Leave all
                   unselected to include every Category.
                 </p>
                 <div className={styles.categoryList}>
@@ -355,7 +361,6 @@ export function SessionCreationForm({
               <fieldset className={styles.accuracyFieldset}>
                 <legend>Question Accuracy</legend>
                 <div className={styles.accuracyControls}>
-                  <span aria-hidden="true">Question Accuracy:</span>
                   <label>
                     <span className={styles.visuallyHidden}>Comparison</span>
                     <select
