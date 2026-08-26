@@ -63,6 +63,30 @@ function getResponseErrorMessage(body: unknown): string | null {
   return typeof error.message === "string" ? error.message : null;
 }
 
+function getResponseErrorCode(body: unknown): string | null {
+  if (typeof body !== "object" || body === null || !("error" in body)) {
+    return null;
+  }
+
+  const error = body.error;
+
+  if (typeof error !== "object" || error === null || !("code" in error)) {
+    return null;
+  }
+
+  return typeof error.code === "string" ? error.code : null;
+}
+
+function isSessionAlreadyCompletedError(
+  responseStatus: number,
+  body: unknown,
+): boolean {
+  return (
+    responseStatus === 409 &&
+    getResponseErrorCode(body) === "SESSION_ALREADY_COMPLETED"
+  );
+}
+
 function isPositiveInteger(value: unknown): value is number {
   return typeof value === "number" && Number.isSafeInteger(value) && value > 0;
 }
@@ -235,6 +259,11 @@ export function SessionQuestionPage({ sessionId }: SessionQuestionPageProps) {
           return;
         }
 
+        if (isSessionAlreadyCompletedError(response.status, responseBody)) {
+          router.replace(`/sessions/${encodeURIComponent(sessionId)}/complete`);
+          return;
+        }
+
         if (!response.ok) {
           setErrorMessage(
             getResponseErrorMessage(responseBody) ?? GENERIC_ERROR_MESSAGE,
@@ -281,6 +310,11 @@ export function SessionQuestionPage({ sessionId }: SessionQuestionPageProps) {
         return;
       }
 
+      if (isSessionAlreadyCompletedError(response.status, responseBody)) {
+        router.replace(`/sessions/${encodeURIComponent(sessionId)}/complete`);
+        return;
+      }
+
       if (!response.ok) {
         setPageData(null);
         setErrorMessage(
@@ -314,6 +348,12 @@ export function SessionQuestionPage({ sessionId }: SessionQuestionPageProps) {
       if (response.status === 401) {
         setGuess("");
         router.replace("/");
+        return;
+      }
+
+      if (isSessionAlreadyCompletedError(response.status, responseBody)) {
+        setGuess("");
+        router.replace(`/sessions/${encodeURIComponent(sessionId)}/complete`);
         return;
       }
 
@@ -373,6 +413,12 @@ export function SessionQuestionPage({ sessionId }: SessionQuestionPageProps) {
       if (response.status === 401) {
         setGuess("");
         router.replace("/");
+        return;
+      }
+
+      if (isSessionAlreadyCompletedError(response.status, responseBody)) {
+        setGuess("");
+        router.replace(`/sessions/${encodeURIComponent(sessionId)}/complete`);
         return;
       }
 
@@ -457,6 +503,11 @@ export function SessionQuestionPage({ sessionId }: SessionQuestionPageProps) {
 
       if (response.status === 401) {
         router.replace("/");
+        return;
+      }
+
+      if (isSessionAlreadyCompletedError(response.status, responseBody)) {
+        router.replace(`/sessions/${encodeURIComponent(sessionId)}/complete`);
         return;
       }
 

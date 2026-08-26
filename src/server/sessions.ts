@@ -111,14 +111,6 @@ export type SubmitGuessResult =
       sessionCompleted: true;
       completedByThisGuess: boolean;
       subjectTitle: string;
-      previous: {
-        answerText: string;
-        correct: boolean;
-      };
-      summary: {
-        uniqueQuestionCount: number;
-        guessCount: number;
-      };
     }
   | { status: "not-found" }
   | { status: "forbidden" }
@@ -424,24 +416,19 @@ export async function submitGuess(
     throw new Error("Guess could not be recorded for an active Question.");
   }
 
-  const previous = {
-    answerText: questionRecord.answerText,
-    correct,
-  };
-
   if (result.status === "session-completed") {
     return {
       status: "success",
       sessionCompleted: true,
       completedByThisGuess: result.completedByThisGuess,
       subjectTitle: questionRecord.subjectTitle,
-      previous,
-      summary: {
-        uniqueQuestionCount: result.uniqueQuestionCount,
-        guessCount: result.guessCount,
-      },
     };
   }
+
+  const previous = {
+    answerText: questionRecord.answerText,
+    correct,
+  };
 
   return {
     status: "success",

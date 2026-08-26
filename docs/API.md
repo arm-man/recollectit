@@ -188,15 +188,6 @@ type SessionState = {
 
 `questionsAnsweredCorrectly` is the number of Questions in the Session that have been answered correctly. `questionsTotal` is the total number of Questions in the Session. Both values describe the entire Session and do not reset when a new Round begins.
 
-### Completion Summary
-
-```ts
-type CompletionSummary = {
-  uniqueQuestionCount: number;
-  guessCount: number;
-};
-```
-
 ## Endpoints
 
 ### Log In
@@ -513,15 +504,7 @@ Success response when the Guess completes the Session — `200 OK`:
 
 ```json
 {
-  "sessionCompleted": true,
-  "previous": {
-    "answerText": "Paris",
-    "correct": true
-  },
-  "summary": {
-    "uniqueQuestionCount": 20,
-    "guessCount": 25
-  }
+  "sessionCompleted": true
 }
 ```
 
@@ -615,7 +598,7 @@ Every Route Handler that uses PostgreSQL must use the Node.js runtime rather tha
 5. Reject Session creation when there are no eligible Questions or five active Sessions.
 6. Submit incorrect and correct Guesses, including an empty Guess and Guesses matching Primary and Alternate Answers.
 7. Confirm Guess responses return the previous answer result, next-Question, and Session state.
-8. Complete a Session and return the correct completion summary.
+8. Complete a Session and return `sessionCompleted: true`.
 9. Skip without incrementing Attempts or changing previous answer result.
 10. Reject Skip when no other Question is pending in the Round.
 11. Abandon an active Session and retain its historical progress.

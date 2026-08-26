@@ -183,11 +183,7 @@ export async function POST(
         );
       }
 
-      return Response.json({
-        sessionCompleted: true,
-        previous: result.previous,
-        summary: result.summary,
-      });
+      return Response.json({ sessionCompleted: true });
     }
 
     return Response.json({

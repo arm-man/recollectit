@@ -135,7 +135,6 @@ type GuessSessionStateRow = {
   maximum_pending_attempts: number | null;
   questions_answered_correctly: number;
   questions_total: number;
-  guess_count: number;
 };
 
 export type SessionCreationPageData = {
@@ -240,8 +239,6 @@ export type RecordGuessDatabaseResult =
   | {
       status: "session-completed";
       completedByThisGuess: boolean;
-      uniqueQuestionCount: number;
-      guessCount: number;
     }
   | { status: "not-recorded" };
 
@@ -1020,7 +1017,6 @@ export async function recordGuess(
            COUNT(*) FILTER (
              WHERE completed_at IS NOT NULL
            )::integer AS questions_answered_correctly,
-           COALESCE(SUM(attempts), 0)::integer AS guess_count,
            MIN(attempts) FILTER (
              WHERE completed_at IS NULL
            )::integer AS minimum_pending_attempts,
@@ -1051,8 +1047,7 @@ export async function recordGuess(
          session_state.minimum_pending_attempts,
          session_state.maximum_pending_attempts,
          session_state.questions_answered_correctly,
-         session_state.questions_total,
-         session_state.guess_count
+         session_state.questions_total
        FROM sessions
        CROSS JOIN session_state
        LEFT JOIN next_question ON TRUE
@@ -1070,8 +1065,6 @@ export async function recordGuess(
       return {
         status: "session-completed",
         completedByThisGuess: completionResult.rows.length === 1,
-        uniqueQuestionCount: state.questions_total,
-        guessCount: state.guess_count,
       };
     }
 
