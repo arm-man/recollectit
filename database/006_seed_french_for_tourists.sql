@@ -59,7 +59,6 @@ BEGIN
     (v_subject_id, v_greetings_category_id, 'It''s nothing (standard reply to merci)', 'De rien'),
     (v_subject_id, v_greetings_category_id, 'Where are the toilets?', 'Où sont les toilettes ?'),
     (v_subject_id, v_greetings_category_id, 'The key', 'La clé'),
-    (v_subject_id, v_greetings_category_id, 'Help!', 'Au secours !'),
     (v_subject_id, v_greetings_category_id, 'Where is the pharmacy?', 'Où est la pharmacie ?'),
     (v_subject_id, v_greetings_category_id, 'North', 'Nord'),
     (v_subject_id, v_greetings_category_id, 'South', 'Sud'),
