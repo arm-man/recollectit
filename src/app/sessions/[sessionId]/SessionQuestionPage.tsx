@@ -604,12 +604,15 @@ export function SessionQuestionPage({ sessionId }: SessionQuestionPageProps) {
 
         <form
           className={styles.answerForm}
+          autoComplete="off"
           onSubmit={(event) => {
             event.preventDefault();
             void submitCurrentGuess();
           }}
         >
           <label htmlFor="guess">Your answer</label>
+          {/* Vendor-specific ignore attributes supplement the standard browser
+              hints because password managers often use their own heuristics. */}
           <input
             ref={guessInputRef}
             id="guess"
@@ -617,6 +620,14 @@ export function SessionQuestionPage({ sessionId }: SessionQuestionPageProps) {
             type="text"
             maxLength={100}
             autoComplete="off"
+            autoCorrect="off"
+            spellCheck={false}
+            inputMode="text"
+            enterKeyHint="send"
+            data-1p-ignore="true"
+            data-bwignore="true"
+            data-lpignore="true"
+            data-form-type="other"
             placeholder="Type answer here"
             value={guess}
             onChange={(event) => setGuess(event.target.value)}

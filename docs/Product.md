@@ -154,6 +154,7 @@ Primary product success measure: students study regularly.
 - Pressing Enter functions the same as clicking **Submit** when the Guess input has focus.
 - An empty Guess is valid.
 - The Guess is limited to 100 characters.
+- The Guess form and input will provide advisory hints requesting that browsers, virtual keyboards, and common password managers disable autofill, autocorrection, spellcheck, and credential or personal-information suggestions. The browser and keyboard retain final control and may ignore these hints.
 - The most recently submitted Guess and its Result will use a light green or red background with a stronger status-colored border. Guess text remains dark, and the Result includes an explicit correct or incorrect icon and label so the outcome does not rely on color alone. The correct Answer remains visually neutral.
 - The previous Q&A section is hidden until the Student submits a Guess after opening or resuming the Session page.
 - **Skip for now** does not count as a Guess/Attempt and does not affect the previous Q&A section.
