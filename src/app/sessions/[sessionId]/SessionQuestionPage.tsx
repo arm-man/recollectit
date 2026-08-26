@@ -515,32 +515,85 @@ export function SessionQuestionPage({ sessionId }: SessionQuestionPageProps) {
 
   return (
     <main className={styles.main}>
-      <section className={styles.sessionDetails} aria-label="Session details">
-        <div>
-          <p>Subject</p>
-          <h1>{pageData.sessionDetails.subject}</h1>
-        </div>
-        {pageData.sessionDetails.categories.length > 0 ? (
+      <section className={styles.sessionSummary} aria-label="Session summary">
+        <div className={styles.sessionDetails}>
           <div>
-            <p>Categories</p>
-            <p>{pageData.sessionDetails.categories.join(", ")}</p>
+            <p>Subject</p>
+            <h1>{pageData.sessionDetails.subject}</h1>
           </div>
-        ) : null}
+          {pageData.sessionDetails.categories.length > 0 ? (
+            <div>
+              <p>Categories</p>
+              <p>{pageData.sessionDetails.categories.join(", ")}</p>
+            </div>
+          ) : null}
+        </div>
+
+        <div className={styles.statusGrid}>
+          <div className={styles.roundCard} aria-label="Current round">
+            <p>Round</p>
+            <p>{pageData.session.roundNumber}</p>
+          </div>
+          <div className={styles.progressCard} aria-label="Session progress">
+            <p>
+              <strong>{pageData.session.questionsAnsweredCorrectly}</strong> of{" "}
+              <strong>{pageData.session.questionsTotal}</strong> answered
+              correctly
+            </p>
+          </div>
+        </div>
       </section>
 
-      <div className={styles.statusGrid}>
-        <section className={styles.roundCard} aria-label="Current round">
-          <p>Round</p>
-          <p>{pageData.session.roundNumber}</p>
+      {previousSubmission ? (
+        <section
+          className={styles.previousCard}
+          aria-labelledby="previous-heading"
+          aria-live={
+            previousSubmission.status === "error" ? "assertive" : "polite"
+          }
+        >
+          <p className={styles.eyebrow}>Previous Q&amp;A</p>
+          <h2 id="previous-heading">Most recent submission</h2>
+
+          {previousSubmission.status === "error" ? (
+            <p className={styles.previousError}>{previousSubmission.message}</p>
+          ) : (
+            <dl className={styles.previousDetails}>
+              <div
+                className={
+                  previousSubmission.correct
+                    ? styles.correctStatus
+                    : styles.incorrectStatus
+                }
+              >
+                <dt>Result</dt>
+                <dd className={styles.resultText}>
+                  <span className={styles.resultIcon} aria-hidden="true">
+                    {previousSubmission.correct ? "✓" : "✕"}
+                  </span>
+                  <span>
+                    {previousSubmission.correct ? "Correct" : "Incorrect"}
+                  </span>
+                </dd>
+              </div>
+              <div
+                className={
+                  previousSubmission.correct
+                    ? styles.correctStatus
+                    : styles.incorrectStatus
+                }
+              >
+                <dt>Your Guess</dt>
+                <dd>{previousSubmission.guessText || "(empty)"}</dd>
+              </div>
+              <div>
+                <dt>Correct Answer</dt>
+                <dd>{previousSubmission.answerText}</dd>
+              </div>
+            </dl>
+          )}
         </section>
-        <section className={styles.progressCard} aria-label="Session progress">
-          <p>
-            <strong>{pageData.session.questionsAnsweredCorrectly}</strong> of{" "}
-            <strong>{pageData.session.questionsTotal}</strong> questions
-            answered correctly
-          </p>
-        </section>
-      </div>
+      ) : null}
 
       <section
         className={styles.questionCard}
@@ -564,6 +617,7 @@ export function SessionQuestionPage({ sessionId }: SessionQuestionPageProps) {
             type="text"
             maxLength={100}
             autoComplete="off"
+            placeholder="Type answer here"
             value={guess}
             onChange={(event) => setGuess(event.target.value)}
           />
@@ -593,57 +647,6 @@ export function SessionQuestionPage({ sessionId }: SessionQuestionPageProps) {
           </div>
         </form>
       </section>
-
-      {previousSubmission ? (
-        <section
-          className={styles.previousCard}
-          aria-labelledby="previous-heading"
-          aria-live={
-            previousSubmission.status === "error" ? "assertive" : "polite"
-          }
-        >
-          <p className={styles.eyebrow}>Previous Q&amp;A</p>
-          <h2 id="previous-heading">Most recent submission</h2>
-
-          {previousSubmission.status === "error" ? (
-            <p className={styles.previousError}>{previousSubmission.message}</p>
-          ) : (
-            <dl className={styles.previousDetails}>
-              <div
-                className={
-                  previousSubmission.correct
-                    ? styles.correctStatus
-                    : styles.incorrectStatus
-                }
-              >
-                <dt>Your Guess</dt>
-                <dd>{previousSubmission.guessText || "(empty)"}</dd>
-              </div>
-              <div>
-                <dt>Correct Answer</dt>
-                <dd>{previousSubmission.answerText}</dd>
-              </div>
-              <div
-                className={
-                  previousSubmission.correct
-                    ? styles.correctStatus
-                    : styles.incorrectStatus
-                }
-              >
-                <dt>Result</dt>
-                <dd className={styles.resultText}>
-                  <span className={styles.resultIcon} aria-hidden="true">
-                    {previousSubmission.correct ? "✓" : "✕"}
-                  </span>
-                  <span>
-                    {previousSubmission.correct ? "Correct" : "Incorrect"}
-                  </span>
-                </dd>
-              </div>
-            </dl>
-          )}
-        </section>
-      ) : null}
     </main>
   );
 }

@@ -136,7 +136,7 @@ Primary product success measure: students study regularly.
     - The Categories, if applicable
       - Categories are the distinct categorized Questions represented in the Session's fixed Question set. Uncategorized Questions do not add a Category label.
   - The Round number on its own line or in its own section, e.g. `Round 1`.
-  - Session progress on a separate line or in a separate section, e.g. `5 of 20 questions answered correctly`.
+  - Session progress on a separate line or in a separate section, e.g. `5 of 20 answered correctly`.
     - The first number is the number of Questions in the Session that have been answered correctly.
     - The second number is the total number of Questions in the Session.
   - A section for the Q&A:
@@ -149,6 +149,7 @@ Primary product success measure: students study regularly.
     - The correct Answer
     - Whether the Guess was correct or incorrect
     - The previous Question is not shown.
+    - The section is a top-level pane displayed between the Session summary and the current Q&A pane.
 
 - Pressing Enter functions the same as clicking **Submit** when the Guess input has focus.
 - An empty Guess is valid.
@@ -220,6 +221,11 @@ The Session end screen will display:
 ## Mobile Requirements
 
 - The application must work well on common mobile, tablet, and desktop screen sizes.
+- The application will use one responsive layout that adapts to the available viewport width rather than detecting a specific device type.
 - The Question and Guess input should remain easy to read and use on a phone.
 - Controls must be touch-friendly.
 - Core study interactions must not depend on hover.
+- On narrow screens, the Session Subject, Categories, Round, and progress will be presented as one compact summary, while wider screens may use the more spacious card layout.
+- On narrow screens, the visible **Your answer** label will be hidden while remaining available to assistive technology. When the empty Guess input is not focused, it will show **Type answer here** in light gray; the hint disappears when the input receives focus.
+- On narrow screens, the previous Q&A will use a compact single-panel presentation, decorative spacing will be reduced, and **Skip for now** and **Submit** will remain side by side while retaining touch-friendly sizes.
+- Responsive changes must not reduce the readability or usability of the wider-screen Session layout.
