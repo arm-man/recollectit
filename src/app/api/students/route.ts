@@ -72,6 +72,9 @@ export async function POST(request: Request): Promise<Response> {
       );
     }
 
+    await logInfo(
+      `A new Student was created with Username "${result.student.username}".`,
+    );
     await setCurrentStudentCookie(result.student.id);
 
     return new Response(null, { status: 201 });

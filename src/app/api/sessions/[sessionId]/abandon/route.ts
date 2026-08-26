@@ -1,5 +1,5 @@
 import { getCurrentStudent } from "@/server/student-identity";
-import { logUnexpectedError } from "@/server/logs";
+import { logInfo, logUnexpectedError } from "@/server/logs";
 import { abandonSession } from "@/server/sessions";
 
 export const runtime = "nodejs";
@@ -78,6 +78,10 @@ export async function POST(
         409,
       );
     }
+
+    await logInfo(
+      `Student "${student.username}" abandoned Session ${sessionId} for Subject "${result.subjectTitle}".`,
+    );
 
     return Response.json({ completedAt: result.completedAt.toISOString() });
   } catch (error) {

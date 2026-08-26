@@ -1,5 +1,5 @@
 import { getCurrentStudent } from "@/server/student-identity";
-import { logError, logUnexpectedError } from "@/server/logs";
+import { logError, logInfo, logUnexpectedError } from "@/server/logs";
 import { submitGuess } from "@/server/sessions";
 
 export const runtime = "nodejs";
@@ -177,6 +177,12 @@ export async function POST(
     }
 
     if (result.sessionCompleted) {
+      if (result.completedByThisGuess) {
+        await logInfo(
+          `Student "${student.username}" completed Session ${sessionId} for Subject "${result.subjectTitle}".`,
+        );
+      }
+
       return Response.json({
         sessionCompleted: true,
         previous: result.previous,

@@ -63,7 +63,7 @@ export type GetSessionResult =
   | { status: "completed" };
 
 export type AbandonSessionResult =
-  | { status: "success"; completedAt: Date }
+  | { status: "success"; completedAt: Date; subjectTitle: string }
   | { status: "not-found" }
   | { status: "forbidden" }
   | { status: "completed" };
@@ -109,6 +109,8 @@ export type SubmitGuessResult =
   | {
       status: "success";
       sessionCompleted: true;
+      completedByThisGuess: boolean;
+      subjectTitle: string;
       previous: {
         answerText: string;
         correct: boolean;
@@ -309,7 +311,7 @@ export async function abandonSession(
   const completedAt = await markSessionCompleted(sessionId, studentId);
 
   return completedAt
-    ? { status: "success", completedAt }
+    ? { status: "success", completedAt, subjectTitle: record.subjectTitle }
     : { status: "completed" };
 }
 
@@ -431,6 +433,8 @@ export async function submitGuess(
     return {
       status: "success",
       sessionCompleted: true,
+      completedByThisGuess: result.completedByThisGuess,
+      subjectTitle: questionRecord.subjectTitle,
       previous,
       summary: {
         uniqueQuestionCount: result.uniqueQuestionCount,

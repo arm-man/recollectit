@@ -74,6 +74,7 @@ type HistoricalSessionRow = {
 type SessionOwnershipRow = {
   student_id: number;
   completed_at: Date | null;
+  subject_title: string;
 };
 
 type MarkedCompletedSessionRow = {
@@ -111,6 +112,7 @@ type SkipQuestionRow = {
 type GuessQuestionRow = {
   student_id: number;
   session_completed_at: Date | null;
+  subject_title: string;
   question_id: number | null;
   question_completed_at: Date | null;
   answer_text: string | null;
@@ -119,6 +121,10 @@ type GuessQuestionRow = {
 
 type UpdatedGuessRow = {
   question_id: number;
+};
+
+type CompletedSessionRow = {
+  session_id: number;
 };
 
 type GuessSessionStateRow = {
@@ -193,6 +199,7 @@ export type SessionCompleteRecord = {
 export type SessionOwnershipRecord = {
   studentId: number;
   completedAt: Date | null;
+  subjectTitle: string;
 };
 
 export type SkipQuestionRecord = {
@@ -212,6 +219,7 @@ export type SkipQuestionRecord = {
 export type GuessQuestionRecord = {
   studentId: number;
   sessionCompletedAt: Date | null;
+  subjectTitle: string;
   questionId: number | null;
   questionCompletedAt: Date | null;
   answerText: string | null;
@@ -231,6 +239,7 @@ export type RecordGuessDatabaseResult =
     }
   | {
       status: "session-completed";
+      completedByThisGuess: boolean;
       uniqueQuestionCount: number;
       guessCount: number;
     }
@@ -694,15 +703,23 @@ export async function getSessionOwnershipRecord(
   sessionId: number,
 ): Promise<SessionOwnershipRecord | null> {
   const result = await pool.query<SessionOwnershipRow>(
-    `SELECT student_id, completed_at
+    `SELECT
+       sessions.student_id,
+       sessions.completed_at,
+       subjects.title AS subject_title
      FROM sessions
-     WHERE id = $1`,
+     JOIN subjects ON subjects.id = sessions.subject_id
+     WHERE sessions.id = $1`,
     [sessionId],
   );
   const row = result.rows[0];
 
   return row
-    ? { studentId: row.student_id, completedAt: row.completed_at }
+    ? {
+        studentId: row.student_id,
+        completedAt: row.completed_at,
+        subjectTitle: row.subject_title,
+      }
     : null;
 }
 
@@ -919,11 +936,13 @@ export async function getGuessQuestionRecord(
     `SELECT
        sessions.student_id,
        sessions.completed_at AS session_completed_at,
+       subjects.title AS subject_title,
        session_questions.question_id,
        session_questions.completed_at AS question_completed_at,
        questions.answer_text,
        questions.alternate_answer_text
      FROM sessions
+     JOIN subjects ON subjects.id = sessions.subject_id
      LEFT JOIN session_questions
        ON session_questions.session_id = sessions.id
        AND session_questions.question_id = $2
@@ -937,6 +956,7 @@ export async function getGuessQuestionRecord(
     ? {
         studentId: row.student_id,
         sessionCompletedAt: row.session_completed_at,
+        subjectTitle: row.subject_title,
         questionId: row.question_id,
         questionCompletedAt: row.question_completed_at,
         answerText: row.answer_text,
@@ -978,7 +998,7 @@ export async function recordGuess(
       return { status: "not-recorded" };
     }
 
-    await client.query(
+    const completionResult = await client.query<CompletedSessionRow>(
       `UPDATE sessions
        SET completed_at = NOW()
        WHERE id = $1
@@ -988,7 +1008,8 @@ export async function recordGuess(
            FROM session_questions
            WHERE session_id = $1
              AND completed_at IS NULL
-         )`,
+         )
+       RETURNING id AS session_id`,
       [sessionId],
     );
 
@@ -1048,6 +1069,7 @@ export async function recordGuess(
       await client.query("COMMIT");
       return {
         status: "session-completed",
+        completedByThisGuess: completionResult.rows.length === 1,
         uniqueQuestionCount: state.questions_total,
         guessCount: state.guess_count,
       };
