@@ -12,8 +12,9 @@ const SPECIAL_LETTER_REPLACEMENTS: Readonly<Record<string, string>> = {
 };
 
 export function normalizeGuessValue(value: string): string {
-  const replacedValue = Array.from(value, (character) =>
-    SPECIAL_LETTER_REPLACEMENTS[character] ?? character,
+  const replacedValue = Array.from(
+    value,
+    (character) => SPECIAL_LETTER_REPLACEMENTS[character] ?? character,
   ).join("");
 
   return replacedValue
@@ -79,19 +80,30 @@ export function getDamerauLevenshteinDistance(
   return distances[source.length + 1][target.length + 1];
 }
 
-export function isGuessCorrect(guess: string, answer: string): boolean {
+export function isGuessCorrect(
+  guess: string,
+  primaryAnswer: string,
+  alternateAnswer: string | null = null,
+): boolean {
   const normalizedGuess = normalizeGuessValue(guess);
 
   if (normalizedGuess.length === 0) {
     return false;
   }
 
-  const normalizedAnswer = normalizeGuessValue(answer);
-  const answerLength = Array.from(normalizedAnswer).length;
-  const maximumDistance = answerLength <= 4 ? 0 : answerLength <= 8 ? 1 : 2;
+  const answers =
+    alternateAnswer === null
+      ? [primaryAnswer]
+      : [primaryAnswer, alternateAnswer];
 
-  return (
-    getDamerauLevenshteinDistance(normalizedGuess, normalizedAnswer) <=
-    maximumDistance
-  );
+  return answers.some((answer) => {
+    const normalizedAnswer = normalizeGuessValue(answer);
+    const answerLength = Array.from(normalizedAnswer).length;
+    const maximumDistance = answerLength <= 4 ? 0 : answerLength <= 8 ? 1 : 2;
+
+    return (
+      getDamerauLevenshteinDistance(normalizedGuess, normalizedAnswer) <=
+      maximumDistance
+    );
+  });
 }

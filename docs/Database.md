@@ -95,7 +95,7 @@ Constraints:
 
 ### `questions`
 
-Stores Questions and their single Answers.
+Stores Questions and their Primary and optional Alternate Answers.
 
 | Column | Type | Null | Purpose |
 | --- | --- | --- | --- |
@@ -103,7 +103,8 @@ Stores Questions and their single Answers.
 | `subject_id` | `integer` | No | Subject containing the Question. |
 | `category_id` | `integer` | Yes | Optional Category. |
 | `question_text` | `text` | No | Prompt shown to the Student. |
-| `answer_text` | `text` | No | Correct Answer used for Guess evaluation. |
+| `answer_text` | `text` | No | Primary Answer used for Guess evaluation and displayed to the Student. |
+| `alternate_answer_text` | `text` | Yes | Optional Alternate Answer used only for Guess evaluation. |
 
 Constraints:
 
@@ -111,12 +112,13 @@ Constraints:
 - Foreign key from `subject_id` to `subjects(id)`.
 - Composite foreign key from `(subject_id, category_id)` to `categories(subject_id, id)`. This ensures that a Question's Category belongs to the same Subject as the Question.
 - Checks that `question_text` and `answer_text` are not empty after trimming.
+- Check that `alternate_answer_text` is NULL or is not empty after trimming.
 
 The `categories` table therefore needs a supporting unique constraint on `(subject_id, id)` even though `id` is already its primary key.
 
-The Answer remains on the Question row because the initial release permits exactly one Answer per Question. A separate answers table would add indirection without supporting a current requirement.
+Both Answers remain on the Question row because the product permits at most two Answers with fixed, different roles. A separate answers table would add indirection without supporting a current requirement.
 
-Normalized Answer values are not stored. Guess normalization and Damerau-Levenshtein comparison occur in TypeScript as defined by `Product.md` and `Architecture.md`.
+Normalized Answer values are not stored. Guess normalization and the independent Damerau-Levenshtein comparisons against each available Answer occur in TypeScript as defined by `Product.md` and `Architecture.md`.
 
 ### `sessions`
 
@@ -260,7 +262,7 @@ Use one transaction to:
 3. If all Session Questions are complete, set `sessions.completed_at` if it is still `NULL`.
 4. Commit.
 
-Guess evaluation occurs before the transaction begins. The Answer may be read as part of the validation query. The transaction coordinates only the database changes resulting from the Guess.
+Guess evaluation occurs before the transaction begins. The Primary and optional Alternate Answers may be read as part of the validation query. The transaction coordinates only the database changes resulting from the Guess.
 
 ### Skip Question
 
@@ -304,15 +306,15 @@ Recommended foreign-key deletion behavior:
 
 The application should not silently cascade deletion of historical learning data.
 
-## Initial Migration
+## Migrations
 
-Create the schema in:
+The initial schema is located in:
 
 ```text
 database/001_migration_initial.sql
 ```
 
-The migration should create tables in dependency order:
+The migration creates tables in dependency order:
 
 1. `students`
 2. `subjects`
@@ -347,3 +349,4 @@ Before the initial release, verify at least the following against the developmen
 6. Complete the final Question and confirm the Session and completion timestamp update atomically.
 7. Confirm a skipped Question does not change session_questions.attempts and the Question remains pending.
 8. Confirm database constraints reject invalid foreign keys.
+9. Confirm the database accepts a NULL or non-empty Alternate Answer and rejects an empty Alternate Answer.

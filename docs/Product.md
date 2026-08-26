@@ -13,7 +13,8 @@ Primary product success measure: students study regularly.
 - **Student**: the person using Recollect It.
 - **Username**: the name used to access a student's data.
 - **Question**: a prompt presented to the Student.
-- **Answer**: the correct answer to the Question.
+- **Primary Answer**: the required correct Answer used for Guess evaluation and displayed to the Student.
+- **Alternate Answer**: an optional additional correct Answer used only for Guess evaluation and never displayed to the Student.
 - **Guess**: the Student's submitted answer to a Question.
 - **Attempt**: one submitted Guess for a Question. Attempts are counted, but individual Guesses and Attempt details are not retained.
 - **Subject**: a topic containing Questions, e.g. `World Capitals`.
@@ -45,7 +46,9 @@ Primary product success measure: students study regularly.
 - Every Question belongs to only one Subject.
 - If a Subject has Categories, a Question from the Subject may belong to one Category or remain uncategorized.
 - If a Subject has no Categories, all Questions from the Subject will be uncategorized.
-- Every Question has only one Answer. #FutureRelease
+- Every Question has exactly one Primary Answer and may have one Alternate Answer.
+- A Guess is correct when it matches either Answer according to the Guess Evaluation rules.
+- Only the Primary Answer is displayed to Students.
 - Subjects and Categories are global/shared. There is no such thing as private Subject/Questions for a specific Student.
 - Creating or editing Subjects, Questions, Answers, etc. will not be available to Students. #FutureRelease
 - In the initial release, only the Administrator can create, edit, or delete Subjects, Categories, Questions, and Answers. Administrative functionality is not available through the Student interface.
@@ -54,12 +57,12 @@ Primary product success measure: students study regularly.
   - Subject: `World Capitals`
   - Category: `Europe`
   - Question: `United Kingdom`
-  - Answer: `London`
+  - Primary Answer: `London`
 - Example 2:
   - Subject: `French`
   - Category: none
   - Question: `Lunch`
-  - Answer: `Déjeuner`
+  - Primary Answer: `Déjeuner`
 
 ## Sessions
 
@@ -69,7 +72,7 @@ Primary product success measure: students study regularly.
 - A Session ends when every Question in the Session has been answered correctly.
 - Once a Question is answered correctly, it is not asked again during that Session.
 - The set of Questions in a Session is determined when the Session starts and does not change afterward.
-- Assume that the Subject, Category, Question, and Answer will not be edited or deleted while the Session is in progress, so any such interaction can be ignored.
+- Assume that the Subject, Category, Question, Primary Answer, and Alternate Answer will not be edited or deleted while the Session is in progress, so any such interaction can be ignored.
   - Note that this assumption requires an operational promise from administrators, which has been deemed ok for the first release.
 
 ## Landing Page
@@ -146,7 +149,7 @@ Primary product success measure: students study regularly.
     - A **Submit** button
   - A section showing the previous Q&A:
     - The most recently submitted Guess
-    - The correct Answer
+    - The Primary Answer
     - Whether the Guess was correct or incorrect
     - The previous Question is not shown.
     - The section is a top-level pane displayed between the Session summary and the current Q&A pane.
@@ -155,7 +158,7 @@ Primary product success measure: students study regularly.
 - An empty Guess is valid.
 - The Guess is limited to 100 characters.
 - The Guess form and input will provide advisory hints requesting that browsers, virtual keyboards, and common password managers disable autofill, autocorrection, spellcheck, and credential or personal-information suggestions. The browser and keyboard retain final control and may ignore these hints.
-- The most recently submitted Guess and its Result will use a light green or red background with a stronger status-colored border. Guess text remains dark, and the Result includes an explicit correct or incorrect icon and label so the outcome does not rely on color alone. The correct Answer remains visually neutral.
+- The most recently submitted Guess and its Result will use a light green or red background with a stronger status-colored border. Guess text remains dark, and the Result includes an explicit correct or incorrect icon and label so the outcome does not rely on color alone. The Primary Answer remains visually neutral.
 - The previous Q&A section is hidden until the Student submits a Guess after opening or resuming the Session page.
 - **Skip for now** does not count as a Guess/Attempt and does not affect the previous Q&A section.
 - A skipped Question remains pending in the current Round, and a different pending Question is selected randomly. The skipped Question must be presented and Attempted later before the Round can end.
@@ -174,7 +177,7 @@ Primary product success measure: students study regularly.
 
 ## Guess Evaluation
 
-Normalize both the Student's Guess and Question's Answer before comparison. Normalization must:
+Normalize the Student's Guess and each of the Question's available Answers before comparison. Normalization must:
 
 1. Replace ø, ł, ß, æ, and œ with o, l, ss, ae, and oe, including their uppercase equivalents.
 2. Convert all letters to lowercase using Unicode case conversion.
@@ -186,9 +189,9 @@ Examples:
 - `New-York` -> `newyork`
 - `C’est combien?` -> `cestcombien`
 
-After normalization, use Damerau-Levenshtein distance to determine whether the Guess is close enough to be considered correct.
+After normalization, compare the Guess independently with the Primary Answer and, when present, the Alternate Answer. Use Damerau-Levenshtein distance to determine whether each comparison is close enough to be considered correct. The Attempt is correct when either Answer matches.
   - Use a distance of 0 for 1–4 characters, distance of 1 for 5–8 characters, distance of 2 for 9 or more characters.
-  - The number of characters is defined by the Answer, not the Guess.
+  - The number of characters is defined by the particular Answer being compared, not the Guess. The Primary and Alternate Answers may therefore use different distance thresholds.
   - A Guess whose normalized value is empty is valid and will be automatically marked as incorrect.
 
 ## Accuracy
@@ -214,7 +217,7 @@ The Session end screen will display:
 - If the Session was abandoned, note that it was abandoned. Abandonment is true if any Question from the Session remains incomplete.
 - Show the Session's Subject, Categories (if applicable), and completion date.
 - Show the Session Accuracy, rounded to the nearest integer, where `Session Accuracy = Unique Questions / Total Attempts * 100`. Also show the number of unique Questions in the Session and the Total Attempts submitted. If the Session was abandoned, do not show Session Accuracy.
-- Show a table with the following columns: Question, Answer, Attempts, Question Accuracy. Attempts is the number of Attempts submitted for that Question in this Session. The table is sorted by Question Accuracy ascending. If the Session was abandoned, do not show this table.
+- Show a table with the following columns: Question, Answer, Attempts, Question Accuracy. The Answer column displays only the Primary Answer. Attempts is the number of Attempts submitted for that Question in this Session. The table is sorted by Question Accuracy ascending. If the Session was abandoned, do not show this table.
 - If the page is loaded but the Session is not complete, show an error indicating that the Session is still in progress. Do not show any other info that would normally be shown for a completed Session.
 - Since this is a static page with no interaction, except clicking the wordmark to go back to the Landing page, if errors occur, display an error, log the error in the logs table, but do not try to reload or attempt to correct the problem.
 - The page should be retrieved via a Server Component, not an API

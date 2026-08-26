@@ -399,7 +399,11 @@ export async function submitGuess(
     return { status: "question-already-completed" };
   }
 
-  const correct = isGuessCorrect(guess, questionRecord.answerText);
+  const correct = isGuessCorrect(
+    guess,
+    questionRecord.answerText,
+    questionRecord.alternateAnswerText,
+  );
   const result = await recordGuess(sessionId, questionId, correct);
 
   if (result.status === "not-recorded") {

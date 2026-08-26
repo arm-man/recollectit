@@ -338,14 +338,15 @@ Guess evaluation should be implemented as ordinary TypeScript code rather than i
 
 The implementation should:
 
-1. Normalize the Guess and Answer according to `Product.md`.
-2. Calculate Damerau-Levenshtein distance.
-3. Apply the required distance threshold.
-4. Return whether the Guess is correct.
+1. Normalize the Guess once and normalize each available Answer according to `Product.md`.
+2. Compare the Guess independently with the Primary Answer and optional Alternate Answer.
+3. Calculate Damerau-Levenshtein distance and apply the threshold for the particular Answer being compared.
+4. Return true when either Answer matches.
 
 Keep this logic independent enough to unit test directly.
 
 The normalized values do not need to be stored in the database unless a future requirement demonstrates a reason to do so.
+The Alternate Answer remains server-only and is not included in browser-facing data. The API and server-rendered completion data expose only the Primary Answer.
 
 ## Random Question Selection
 
@@ -413,6 +414,7 @@ Initial unit tests should focus on the most consequential pure logic, especially
 
 * Guess normalization.
 * Damerau-Levenshtein evaluation.
+* Primary and Alternate Answer evaluation, including Answer-specific distance thresholds.
 * Accuracy calculations.
 * Question eligibility.
 * Round progression.

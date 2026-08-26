@@ -486,7 +486,7 @@ Validation:
 - An empty Guess is valid and is evaluated as incorrect.
 - The Session must be active and belong to the current Student.
 
-The server reads the Answer, evaluates the Guess in TypeScript, and then uses the transaction defined in `Database.md` to update durable state.
+The server reads the Primary Answer and optional Alternate Answer, evaluates the Guess independently against each available Answer in TypeScript, and then uses the transaction defined in `Database.md` to update durable state. Either Answer may make the Attempt correct.
 
 Success response when the Session remains active — `200 OK`:
 
@@ -526,6 +526,8 @@ Success response when the Guess completes the Session — `200 OK`:
 ```
 
 The Resonse questionId shall be different from the Request questionId, if possible. The only time it is not possible is if there is only one questionId in the Session that has not been completed.
+
+`previous.answerText` always contains the Primary Answer, including when the Guess matched the Alternate Answer. The Alternate Answer is not returned to the browser.
 
 Expected errors:
 
@@ -611,7 +613,7 @@ Every Route Handler that uses PostgreSQL must use the Node.js runtime rather tha
 3. Preview Session filters, including a zero-Question result.
 4. Start a Session and confirm the API returns only the Session identifier, then get the Session and confirm it returns the details, initial Question, and Session state.
 5. Reject Session creation when there are no eligible Questions or five active Sessions.
-6. Submit incorrect and correct Guesses, including an empty Guess.
+6. Submit incorrect and correct Guesses, including an empty Guess and Guesses matching Primary and Alternate Answers.
 7. Confirm Guess responses return the previous answer result, next-Question, and Session state.
 8. Complete a Session and return the correct completion summary.
 9. Skip without incrementing Attempts or changing previous answer result.
