@@ -48,6 +48,8 @@ type PreviousSubmission =
 const GENERIC_ERROR_MESSAGE = "Something went wrong. Please try again.";
 const GENERIC_GUESS_ERROR_MESSAGE =
   "An unexpected server error occurred. Reloading a new question.";
+const FIRST_ROUND_TRANSITION_DURATION_MS = 2_000;
+const LATER_ROUND_TRANSITION_DURATION_MS = 1_200;
 
 function getResponseErrorMessage(body: unknown): string | null {
   if (typeof body !== "object" || body === null || !("error" in body)) {
@@ -227,10 +229,15 @@ function isSessionCompletedResponse(body: unknown): boolean {
 export function SessionQuestionPage({ sessionId }: SessionQuestionPageProps) {
   const router = useRouter();
   const guessInputRef = useRef<HTMLInputElement>(null);
+  const shouldRestoreGuessFocusRef = useRef(false);
+  const roundTransitionTimeoutRef = useRef<number | null>(null);
   const [pageData, setPageData] = useState<SessionPageData | null>(null);
   const [guess, setGuess] = useState("");
   const [previousSubmission, setPreviousSubmission] =
     useState<PreviousSubmission | null>(null);
+  const [roundTransitionNumber, setRoundTransitionNumber] = useState<
+    number | null
+  >(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSkipping, setIsSkipping] = useState(false);
@@ -296,6 +303,44 @@ export function SessionQuestionPage({ sessionId }: SessionQuestionPageProps) {
 
     return () => controller.abort();
   }, [router, sessionId]);
+
+  useEffect(() => {
+    return () => {
+      if (roundTransitionTimeoutRef.current !== null) {
+        window.clearTimeout(roundTransitionTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (roundTransitionNumber === null && shouldRestoreGuessFocusRef.current) {
+      shouldRestoreGuessFocusRef.current = false;
+      guessInputRef.current?.focus();
+    }
+  }, [roundTransitionNumber]);
+
+  function startRoundTransition(
+    previousRoundNumber: number,
+    nextRoundNumber: number,
+  ): boolean {
+    if (nextRoundNumber <= previousRoundNumber) {
+      return false;
+    }
+
+    const transitionDuration =
+      previousRoundNumber === 1 && nextRoundNumber === 2
+        ? FIRST_ROUND_TRANSITION_DURATION_MS
+        : LATER_ROUND_TRANSITION_DURATION_MS;
+
+    shouldRestoreGuessFocusRef.current = true;
+    setRoundTransitionNumber(nextRoundNumber);
+    roundTransitionTimeoutRef.current = window.setTimeout(() => {
+      setRoundTransitionNumber(null);
+      roundTransitionTimeoutRef.current = null;
+    }, transitionDuration);
+
+    return true;
+  }
 
   async function reloadSessionAfterError(): Promise<void> {
     try {
@@ -388,7 +433,12 @@ export function SessionQuestionPage({ sessionId }: SessionQuestionPageProps) {
   }
 
   async function submitCurrentGuess(): Promise<void> {
-    if (!pageData || isSubmitting || isSkipping) {
+    if (
+      !pageData ||
+      isSubmitting ||
+      isSkipping ||
+      roundTransitionNumber !== null
+    ) {
       return;
     }
 
@@ -451,6 +501,11 @@ export function SessionQuestionPage({ sessionId }: SessionQuestionPageProps) {
         return;
       }
 
+      const hasRoundTransitionStarted = startRoundTransition(
+        pageData.session.roundNumber,
+        guessResponseData.session.roundNumber,
+      );
+
       setPageData((currentPageData) =>
         currentPageData
           ? {
@@ -467,7 +522,9 @@ export function SessionQuestionPage({ sessionId }: SessionQuestionPageProps) {
         answerText: guessResponseData.previous.answerText,
         correct: guessResponseData.previous.correct,
       });
-      guessInputRef.current?.focus();
+      if (!hasRoundTransitionStarted) {
+        guessInputRef.current?.focus();
+      }
     } catch {
       setGuess("");
       setPreviousSubmission({
@@ -481,7 +538,7 @@ export function SessionQuestionPage({ sessionId }: SessionQuestionPageProps) {
   }
 
   async function skipCurrentQuestion(): Promise<void> {
-    if (!pageData || isSkipping) {
+    if (!pageData || isSkipping || roundTransitionNumber !== null) {
       return;
     }
 
@@ -694,7 +751,9 @@ export function SessionQuestionPage({ sessionId }: SessionQuestionPageProps) {
             <button
               type="button"
               className={styles.skipButton}
-              disabled={isSkipping || isSubmitting}
+              disabled={
+                isSkipping || isSubmitting || roundTransitionNumber !== null
+              }
               onClick={() => void skipCurrentQuestion()}
             >
               {isSkipping ? "Skipping…" : "Skip for now"}
@@ -702,12 +761,27 @@ export function SessionQuestionPage({ sessionId }: SessionQuestionPageProps) {
             <button
               type="submit"
               className={styles.submitButton}
-              disabled={isSubmitting || isSkipping}
+              disabled={
+                isSubmitting || isSkipping || roundTransitionNumber !== null
+              }
             >
               {isSubmitting ? "Submitting…" : "Submit"}
             </button>
           </div>
         </form>
+
+        {roundTransitionNumber !== null ? (
+          <div
+            className={styles.roundTransitionOverlay}
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            <p className={styles.roundTransitionBanner}>
+              Round {roundTransitionNumber}
+            </p>
+          </div>
+        ) : null}
       </section>
     </main>
   );

@@ -139,6 +139,9 @@ Primary product success measure: students study regularly.
     - The Categories, if applicable
       - Categories are the distinct categorized Questions represented in the Session's fixed Question set. Uncategorized Questions do not add a Category label.
   - The Round number on its own line or in its own section, e.g. `Round 1`.
+    - When the Round advances, a banner containing `Round X` is centered over the Q&A pane, and the pane is visually subdued for the duration of the transition. The Guess input remains enabled so the Student may begin entering the next answer, while **Skip for now** and **Submit** remain unavailable.
+    - The transition from Round 1 to Round 2 lasts 2 seconds. Every later Round transition lasts 1.2 seconds.
+    - When the banner is removed, focus returns to the Guess input. The Round change is announced politely to assistive technology.
   - Session progress on a separate line or in a separate section, e.g. `5 of 20 answered correctly`.
     - The first number is the number of Questions in the Session that have been answered correctly.
     - The second number is the total number of Questions in the Session.
