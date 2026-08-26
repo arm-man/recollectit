@@ -232,6 +232,8 @@ For a completed Session:
 
 For abandoned Sessions, Session Accuracy is not shown. Thus, cases where no Attempts were made or there are more Unique Questions than Total Attempts are safely ignored.
 
+The Session Complete table uses session-only Question Accuracy for each Question. Calculate it from the selected `session_questions` row as `Correct Attempts in the Session / session_questions.attempts`, where Correct Attempts is 1 when `session_questions.completed_at` is not NULL and 0 otherwise. Do not include `session_questions` rows from the Student's other Sessions in this table calculation. This is distinct from the historical Question Accuracy used for Session creation filters.
+
 ## Transactions
 
 ### Create Student

@@ -752,22 +752,6 @@ export async function getSessionCompleteRecord(
        JOIN questions ON questions.id = session_questions.question_id
        LEFT JOIN categories ON categories.id = questions.category_id
        WHERE session_questions.session_id = $1
-     ),
-     student_question_history AS (
-       SELECT
-         historical_questions.question_id,
-         COALESCE(
-           COUNT(*) FILTER (
-             WHERE historical_questions.completed_at IS NOT NULL
-           )::numeric / NULLIF(SUM(historical_questions.attempts), 0),
-           0
-         ) AS accuracy
-       FROM session_questions AS historical_questions
-       JOIN sessions AS historical_sessions
-         ON historical_sessions.id = historical_questions.session_id
-       JOIN selected_session
-         ON selected_session.student_id = historical_sessions.student_id
-       GROUP BY historical_questions.question_id
      )
      SELECT
        selected_session.student_id,
@@ -788,18 +772,23 @@ export async function getSessionCompleteRecord(
        questions.question_text,
        questions.answer_text,
        session_questions.attempts,
-       ROUND(student_question_history.accuracy * 100)::integer
-         AS question_accuracy
+       COALESCE(
+         ROUND(
+           (CASE
+              WHEN session_questions.completed_at IS NOT NULL THEN 1
+              ELSE 0
+            END)::numeric / NULLIF(session_questions.attempts, 0) * 100
+         ),
+         0
+       )::integer AS question_accuracy
      FROM selected_session
      CROSS JOIN session_summary
      CROSS JOIN session_categories
      JOIN session_questions
        ON session_questions.session_id = selected_session.id
      JOIN questions ON questions.id = session_questions.question_id
-     JOIN student_question_history
-       ON student_question_history.question_id = questions.id
      ORDER BY
-       student_question_history.accuracy,
+       question_accuracy,
        questions.question_text,
        questions.id`,
     [sessionId],
