@@ -173,6 +173,13 @@
   text-transform: uppercase;
 }
 
+.questionResults th:nth-child(3),
+.questionResults td:nth-child(3) {
+  width: 110px;
+  text-align: right;
+  white-space: nowrap;
+}
+
 .questionResults th:last-child,
 .questionResults td:last-child {
   width: 170px;

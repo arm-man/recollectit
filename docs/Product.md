@@ -213,8 +213,8 @@ The Session end screen will display:
 - Confirmation that the Session has ended.
 - If the Session was abandoned, note that it was abandoned. Abandonment is true if any Question from the Session remains incomplete.
 - Show the Session's Subject, Categories (if applicable), and completion date.
-- Show the Session Accuracy, rounded to the nearest integer, where `Session Accuracy = Unique Questions / Guesses * 100`. Also show the number of unique Questions in the Session, and number of Guesses submitted. If the Session was abandoned, do not show Session Accuracy.
-- Show a table with the following columns: Question, Answer, Question Accuracy. The table is sorted by Question Accuracy ascending. If the Session was abandoned, do not show this table.
+- Show the Session Accuracy, rounded to the nearest integer, where `Session Accuracy = Unique Questions / Total Attempts * 100`. Also show the number of unique Questions in the Session and the Total Attempts submitted. If the Session was abandoned, do not show Session Accuracy.
+- Show a table with the following columns: Question, Answer, Attempts, Question Accuracy. Attempts is the number of Attempts submitted for that Question in this Session. The table is sorted by Question Accuracy ascending. If the Session was abandoned, do not show this table.
 - If the page is loaded but the Session is not complete, show an error indicating that the Session is still in progress. Do not show any other info that would normally be shown for a completed Session.
 - Since this is a static page with no interaction, except clicking the wordmark to go back to the Landing page, if errors occur, display an error, log the error in the logs table, but do not try to reload or attempt to correct the problem.
 - The page should be retrieved via a Server Component, not an API

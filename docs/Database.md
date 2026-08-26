@@ -225,10 +225,10 @@ A skipped Question remains pending because skipping writes no Attempt. The serve
 For a completed Session:
 
 - Unique Questions = number of `session_questions` rows.
-- Guesses = sum of session_questions.attempts for the Session.
-- Session Accuracy = Unique Questions / Guesses × 100
+- Total Attempts = sum of session_questions.attempts for the Session.
+- Session Accuracy = Unique Questions / Total Attempts × 100
 
-For abandoned Sessions, Session Accuracy is not shown. Thus, cases where no Guesses were made or there are more Unique Questions than Guesses are safely ignored.
+For abandoned Sessions, Session Accuracy is not shown. Thus, cases where no Attempts were made or there are more Unique Questions than Total Attempts are safely ignored.
 
 ## Transactions
 

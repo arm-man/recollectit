@@ -139,6 +139,7 @@ export type GetSessionCompleteResult =
           questionId: number;
           question: string;
           answer: string;
+          attempts: number;
           questionAccuracy: number;
         }[];
       };

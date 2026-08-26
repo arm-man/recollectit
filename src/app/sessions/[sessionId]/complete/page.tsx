@@ -170,7 +170,7 @@ export default async function SessionCompletePage({
           <p>
             {session.isAbandoned
               ? "This Session ended after it was abandoned."
-              : "You answered every Question in this Session correctly."}
+              : "Good job!"}
           </p>
         </section>
 
@@ -205,7 +205,7 @@ export default async function SessionCompletePage({
             <dd>{session.uniqueQuestionCount}</dd>
           </div>
           <div>
-            <dt>Guesses</dt>
+            <dt>Total Attempts</dt>
             <dd>{session.guessCount}</dd>
           </div>
         </dl>
@@ -219,6 +219,7 @@ export default async function SessionCompletePage({
                   <tr>
                     <th scope="col">Question</th>
                     <th scope="col">Answer</th>
+                    <th scope="col">Attempts</th>
                     <th scope="col">Question Accuracy</th>
                   </tr>
                 </thead>
@@ -227,6 +228,7 @@ export default async function SessionCompletePage({
                     <tr key={question.questionId}>
                       <td>{question.question}</td>
                       <td>{question.answer}</td>
+                      <td>{question.attempts}</td>
                       <td>{question.questionAccuracy}%</td>
                     </tr>
                   ))}

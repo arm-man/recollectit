@@ -92,6 +92,7 @@ type SessionCompleteRow = {
   question_id: number;
   question_text: string;
   answer_text: string;
+  attempts: number;
   question_accuracy: number;
 };
 
@@ -183,6 +184,7 @@ export type SessionCompleteRecord = {
     questionId: number;
     question: string;
     answer: string;
+    attempts: number;
     questionAccuracy: number;
   }[];
 };
@@ -769,6 +771,7 @@ export async function getSessionCompleteRecord(
        questions.id AS question_id,
        questions.question_text,
        questions.answer_text,
+       session_questions.attempts,
        ROUND(student_question_history.accuracy * 100)::integer
          AS question_accuracy
      FROM selected_session
@@ -804,6 +807,7 @@ export async function getSessionCompleteRecord(
       questionId: row.question_id,
       question: row.question_text,
       answer: row.answer_text,
+      attempts: row.attempts,
       questionAccuracy: row.question_accuracy,
     })),
   };
