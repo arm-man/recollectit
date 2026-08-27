@@ -83,7 +83,7 @@ export function SessionCreationForm({
   const [accuracyOperator, setAccuracyOperator] = useState<"lte" | "gte">(
     "lte",
   );
-  const [accuracyPercent, setAccuracyPercent] = useState(50);
+  const [accuracyPercent, setAccuracyPercent] = useState(100);
   const [questionCount, setQuestionCount] = useState<number | null>(
     defaultSubjectId === null ? 0 : null,
   );
@@ -270,28 +270,13 @@ export function SessionCreationForm({
     <main className={styles.main}>
       <div className={styles.introduction}>
         <h1>Create a new Session</h1>
-      </div>
-
-      <section className={styles.countCard} aria-labelledby="question-count">
-        <div className={styles.countExplanation}>
-          <p>Total Questions to be asked</p>
-          <p>
-            A Session continues until every Question is answered correctly.
-            Round 1 includes every Question; each later Round includes only the
-            Questions missed in the previous Round. This repeats until no
-            Questions remain.
-          </p>
-        </div>
-        <p
-          id="question-count"
-          className={styles.questionCount}
-          aria-live="polite"
-          aria-busy={isUpdatingCount}
-        >
-          {questionCount === null ? "…" : questionCount}
-          <span>{questionCount === 1 ? " Question" : " Questions"}</span>
+        <p>
+          A Session continues until every Question is answered correctly. Round
+          1 includes every Question; each later Round includes only the
+          Questions missed in the previous Round. This repeats until no
+          Questions remain.
         </p>
-      </section>
+      </div>
 
       <section className={styles.filterCard} aria-labelledby="filters-heading">
         <div className={styles.cardHeading}>
@@ -339,8 +324,8 @@ export function SessionCreationForm({
               <fieldset className={styles.categoryFieldset}>
                 <legend>Categories</legend>
                 <p>
-                  Select Categories to limit the Questions. Leave all
-                  unselected to include every Category.
+                  Select Categories to limit the Questions. Leave all unselected
+                  to include every Category.
                 </p>
                 <div className={styles.categoryList}>
                   {selectedSubject.categories.map((category) => (
@@ -402,6 +387,25 @@ export function SessionCreationForm({
           {previewError ? <p className={styles.error}>{previewError}</p> : null}
           {startError ? <p className={styles.error}>{startError}</p> : null}
         </div>
+      </section>
+
+      <section
+        className={styles.countCard}
+        aria-labelledby="question-count-label"
+      >
+        <div className={styles.countExplanation}>
+          <p id="question-count-label">Total Questions to be asked</p>
+          <p>For a manageable study session, aim for 15–35 questions.</p>
+        </div>
+        <p
+          id="question-count"
+          className={styles.questionCount}
+          aria-live="polite"
+          aria-busy={isUpdatingCount}
+        >
+          {questionCount === null ? "…" : questionCount}
+          <span>{questionCount === 1 ? " Question" : " Questions"}</span>
+        </p>
       </section>
 
       <div className={styles.actions}>

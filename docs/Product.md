@@ -100,7 +100,7 @@ Primary product success measure: students study regularly.
 
 - When creating a new Session, the Student will be shown a page with the following content:
   - A Recollect It watermark/logo in the upper left which takes the Student back to the Landing Page.
-  - The total number of Questions to be asked in the Session based on the options selected within the page.
+  - Near the top, explanatory text stating that a Session continues until every Question is answered correctly, with later Rounds containing only Questions missed in the previous Round.
   - A dropdown menu to select a Subject.
   - A checkbox with **Ask All Questions**.
   - A multi-select List Box to select a Category if the Subject has one or more Categories, otherwise the Category list box is not visible.
@@ -108,6 +108,8 @@ Primary product success measure: students study regularly.
     - If the Student has never Attempted any Question from the selected Subject, the Question Accuracy filter is hidden and Question Accuracy does not restrict the eligible Questions.
     - Implementation details can be altered as long as the spirit of the feature is maintained.
     - Example: If Question Accuracy <= 40% is selected, only Questions with an Accuracy of 40% or less are included.
+  - Between the Session options and the page buttons, show the total number of Questions to be asked based on the selected options.
+    - Show the neutral guidance **For a manageable study session, aim for 15–35 questions.** in smaller text.
   - A button called **Home** that takes the Student to the Landing Page.
   - A button called **Start Session**.
   - Filter changes should call the API endpoint immediately.
@@ -121,7 +123,7 @@ Primary product success measure: students study regularly.
 - No Categories are selected by default.
 - The Category list box user experience should be designed so it is easy to de-select a Category, including de-selecting a Category so there are zero selected.
 - X will default to `<=`.
-- Y will default to `50%`.
+- Y will default to `100%`.
 - If one or more Categories are selected, only Questions matching the selected Categories will be included in the Session.
 - If no Categories are selected, all Questions in the selected Subject are eligible, including uncategorized Questions.
 - The Student cannot filter specifically for uncategorized Questions.
