@@ -51,6 +51,7 @@ export type GetSessionResult =
       currentQuestion: {
         questionId: number;
         questionText: string;
+        questionAccuracy: number | null;
       };
       session: {
         roundNumber: number;
@@ -74,6 +75,7 @@ export type SkipQuestionResult =
       currentQuestion: {
         questionId: number;
         questionText: string;
+        questionAccuracy: number | null;
       };
       session: {
         roundNumber: number;
@@ -99,6 +101,7 @@ export type SubmitGuessResult =
       currentQuestion: {
         questionId: number;
         questionText: string;
+        questionAccuracy: number | null;
       };
       session: {
         roundNumber: number;

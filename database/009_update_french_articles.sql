@@ -244,4 +244,9 @@ SET answer_text = 'La moutarde',
     alternate_answer_text = 'Moutarde'
 WHERE id = 370;
 
+-- This question already had the article but there was no alternate answer
+UPDATE questions
+SET alternate_answer_text = 'Clé'
+WHERE id = 309;
+
 COMMIT;

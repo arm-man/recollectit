@@ -149,6 +149,10 @@ Primary product success measure: students study regularly.
     - The second number is the total number of Questions in the Session.
   - A section for the Q&A:
     - The Question
+    - The Student's Question Accuracy, rounded to the nearest whole percentage, when the Student has answered the Question correctly at least once across any Session.
+      - Display Question Accuracy in the Question card header near the Question label.
+      - Calculate the percentage from all Correct Attempts and Total Attempts for that Question by that Student across all active and completed Sessions, including the current Session.
+      - If the Student has never answered the Question correctly, do not display Question Accuracy.
     - An area to display the Guess as it is typed
     - A **Skip for now** button
     - A **Submit** button

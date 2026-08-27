@@ -49,6 +49,7 @@ type SessionPageRow = {
   categories: string[];
   question_id: number | null;
   question_text: string | null;
+  question_accuracy: number | null;
   questions_answered_correctly: number;
   questions_total: number;
   minimum_pending_attempts: number | null;
@@ -105,6 +106,7 @@ type SkipQuestionRow = {
   maximum_pending_attempts: number | null;
   replacement_question_id: number | null;
   replacement_question_text: string | null;
+  replacement_question_accuracy: number | null;
   questions_answered_correctly: number;
   questions_total: number;
 };
@@ -131,6 +133,7 @@ type GuessSessionStateRow = {
   session_completed_at: Date | null;
   next_question_id: number | null;
   next_question_text: string | null;
+  next_question_accuracy: number | null;
   minimum_pending_attempts: number | null;
   maximum_pending_attempts: number | null;
   questions_answered_correctly: number;
@@ -155,6 +158,7 @@ export type SessionPageRecord = {
   currentQuestion: {
     questionId: number;
     questionText: string;
+    questionAccuracy: number | null;
   } | null;
   roundNumber: number | null;
   questionsAnsweredCorrectly: number;
@@ -209,6 +213,7 @@ export type SkipQuestionRecord = {
   replacementQuestion: {
     questionId: number;
     questionText: string;
+    questionAccuracy: number | null;
   } | null;
   roundNumber: number | null;
   questionsAnsweredCorrectly: number;
@@ -231,6 +236,7 @@ export type RecordGuessDatabaseResult =
       currentQuestion: {
         questionId: number;
         questionText: string;
+        questionAccuracy: number | null;
       };
       roundNumber: number;
       questionsAnsweredCorrectly: number;
@@ -654,6 +660,7 @@ export async function getSessionPageRecord(
        session_categories.categories,
        current_question.question_id,
        current_question.question_text,
+       current_question_history.question_accuracy,
        session_state.questions_answered_correctly,
        session_state.questions_total,
        session_state.minimum_pending_attempts,
@@ -661,7 +668,29 @@ export async function getSessionPageRecord(
      FROM selected_session
      CROSS JOIN session_state
      CROSS JOIN session_categories
-     LEFT JOIN current_question ON TRUE`,
+     LEFT JOIN current_question ON TRUE
+     LEFT JOIN LATERAL (
+       SELECT
+         CASE
+           WHEN COUNT(*) FILTER (
+             WHERE history_session_questions.completed_at IS NOT NULL
+           ) > 0 THEN
+             ROUND(
+               COUNT(*) FILTER (
+                 WHERE history_session_questions.completed_at IS NOT NULL
+               )::numeric
+                 / NULLIF(SUM(history_session_questions.attempts), 0)
+                 * 100
+             )::integer
+           ELSE NULL
+         END AS question_accuracy
+       FROM session_questions AS history_session_questions
+       JOIN sessions AS history_sessions
+         ON history_sessions.id = history_session_questions.session_id
+       WHERE history_sessions.student_id = selected_session.student_id
+         AND history_session_questions.question_id =
+           current_question.question_id
+     ) AS current_question_history ON TRUE`,
     [sessionId],
   );
   const row = result.rows[0];
@@ -689,6 +718,7 @@ export async function getSessionPageRecord(
         : {
             questionId: row.question_id,
             questionText: row.question_text,
+            questionAccuracy: row.question_accuracy,
           },
     roundNumber,
     questionsAnsweredCorrectly: row.questions_answered_correctly,
@@ -824,7 +854,9 @@ export async function getSkipQuestionRecord(
 ): Promise<SkipQuestionRecord> {
   const result = await pool.query<SkipQuestionRow>(
     `WITH selected_session AS (
-       SELECT completed_at AS session_completed_at
+       SELECT
+         student_id,
+         completed_at AS session_completed_at
        FROM sessions
        WHERE id = $1
      ),
@@ -873,12 +905,36 @@ export async function getSkipQuestionRecord(
        session_state.maximum_pending_attempts,
        replacement_question.replacement_question_id,
        replacement_question.replacement_question_text,
+       replacement_question_history.question_accuracy AS
+         replacement_question_accuracy,
        session_state.questions_answered_correctly,
        session_state.questions_total
      FROM selected_session
      CROSS JOIN session_state
      LEFT JOIN selected_question ON TRUE
-     LEFT JOIN replacement_question ON TRUE`,
+     LEFT JOIN replacement_question ON TRUE
+     LEFT JOIN LATERAL (
+       SELECT
+         CASE
+           WHEN COUNT(*) FILTER (
+             WHERE history_session_questions.completed_at IS NOT NULL
+           ) > 0 THEN
+             ROUND(
+               COUNT(*) FILTER (
+                 WHERE history_session_questions.completed_at IS NOT NULL
+               )::numeric
+                 / NULLIF(SUM(history_session_questions.attempts), 0)
+                 * 100
+             )::integer
+           ELSE NULL
+         END AS question_accuracy
+       FROM session_questions AS history_session_questions
+       JOIN sessions AS history_sessions
+         ON history_sessions.id = history_session_questions.session_id
+       WHERE history_sessions.student_id = selected_session.student_id
+         AND history_session_questions.question_id =
+           replacement_question.replacement_question_id
+     ) AS replacement_question_history ON TRUE`,
     [sessionId, questionId],
   );
   const row = result.rows[0];
@@ -907,6 +963,7 @@ export async function getSkipQuestionRecord(
         : {
             questionId: row.replacement_question_id,
             questionText: row.replacement_question_text,
+            questionAccuracy: row.replacement_question_accuracy,
           },
     roundNumber,
     questionsAnsweredCorrectly: row.questions_answered_correctly,
@@ -1033,6 +1090,7 @@ export async function recordGuess(
          sessions.completed_at AS session_completed_at,
          next_question.next_question_id,
          next_question.next_question_text,
+         next_question_history.question_accuracy AS next_question_accuracy,
          session_state.minimum_pending_attempts,
          session_state.maximum_pending_attempts,
          session_state.questions_answered_correctly,
@@ -1040,6 +1098,28 @@ export async function recordGuess(
        FROM sessions
        CROSS JOIN session_state
        LEFT JOIN next_question ON TRUE
+       LEFT JOIN LATERAL (
+         SELECT
+           CASE
+             WHEN COUNT(*) FILTER (
+               WHERE history_session_questions.completed_at IS NOT NULL
+             ) > 0 THEN
+               ROUND(
+                 COUNT(*) FILTER (
+                   WHERE history_session_questions.completed_at IS NOT NULL
+                 )::numeric
+                   / NULLIF(SUM(history_session_questions.attempts), 0)
+                   * 100
+               )::integer
+             ELSE NULL
+           END AS question_accuracy
+         FROM session_questions AS history_session_questions
+         JOIN sessions AS history_sessions
+           ON history_sessions.id = history_session_questions.session_id
+         WHERE history_sessions.student_id = sessions.student_id
+           AND history_session_questions.question_id =
+             next_question.next_question_id
+       ) AS next_question_history ON TRUE
        WHERE sessions.id = $1`,
       [sessionId, questionId],
     );
@@ -1077,6 +1157,7 @@ export async function recordGuess(
       currentQuestion: {
         questionId: state.next_question_id,
         questionText: state.next_question_text,
+        questionAccuracy: state.next_question_accuracy,
       },
       roundNumber,
       questionsAnsweredCorrectly: state.questions_answered_correctly,

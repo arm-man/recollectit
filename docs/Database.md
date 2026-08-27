@@ -190,6 +190,8 @@ When filtering many Questions for Session creation, aggregate Attempts once for 
 
 Do not store an Accuracy percentage column initially. Stored totals would duplicate the authoritative attempt counts in session_questions and require additional update logic.
 
+When selecting a current Question for the Session page, calculate the Student's Question Accuracy across all of that Student's Sessions, including the current Session. Return the percentage rounded to the nearest integer only when Correct Attempts is greater than zero; otherwise return NULL so the Session page can omit it. Include this calculation in the existing current-Question selection queries rather than executing a separate query. This does not change the Session Complete table's session-only Question Accuracy calculation.
+
 ### Current Round and Session Progress
 
 Assume that all references to `session_questions` below are limited to the Questions belonging to the Session.

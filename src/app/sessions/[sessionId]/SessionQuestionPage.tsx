@@ -13,6 +13,7 @@ type SessionPageData = {
   currentQuestion: {
     questionId: number;
     questionText: string;
+    questionAccuracy: number | null;
   };
   session: {
     roundNumber: number;
@@ -97,6 +98,10 @@ function isNonNegativeInteger(value: unknown): value is number {
   return typeof value === "number" && Number.isSafeInteger(value) && value >= 0;
 }
 
+function isQuestionAccuracy(value: unknown): value is number | null {
+  return value === null || (isNonNegativeInteger(value) && value <= 100);
+}
+
 function getSessionPageData(body: unknown): SessionPageData | null {
   if (
     typeof body !== "object" ||
@@ -118,6 +123,8 @@ function getSessionPageData(body: unknown): SessionPageData | null {
     !isPositiveInteger(body.currentQuestion.questionId) ||
     !("questionText" in body.currentQuestion) ||
     typeof body.currentQuestion.questionText !== "string" ||
+    !("questionAccuracy" in body.currentQuestion) ||
+    !isQuestionAccuracy(body.currentQuestion.questionAccuracy) ||
     !("session" in body) ||
     typeof body.session !== "object" ||
     body.session === null ||
@@ -140,6 +147,7 @@ function getSessionPageData(body: unknown): SessionPageData | null {
     currentQuestion: {
       questionId: body.currentQuestion.questionId,
       questionText: body.currentQuestion.questionText,
+      questionAccuracy: body.currentQuestion.questionAccuracy,
     },
     session: {
       roundNumber: body.session.roundNumber,
@@ -160,6 +168,8 @@ function getSkipResponseData(body: unknown): SkipResponseData | null {
     !isPositiveInteger(body.currentQuestion.questionId) ||
     !("questionText" in body.currentQuestion) ||
     typeof body.currentQuestion.questionText !== "string" ||
+    !("questionAccuracy" in body.currentQuestion) ||
+    !isQuestionAccuracy(body.currentQuestion.questionAccuracy) ||
     !("session" in body) ||
     typeof body.session !== "object" ||
     body.session === null ||
@@ -178,6 +188,7 @@ function getSkipResponseData(body: unknown): SkipResponseData | null {
     currentQuestion: {
       questionId: body.currentQuestion.questionId,
       questionText: body.currentQuestion.questionText,
+      questionAccuracy: body.currentQuestion.questionAccuracy,
     },
     session: {
       roundNumber: body.session.roundNumber,
@@ -707,7 +718,15 @@ export function SessionQuestionPage({ sessionId }: SessionQuestionPageProps) {
         className={styles.questionCard}
         aria-labelledby="question-heading"
       >
-        <p className={styles.eyebrow}>Question</p>
+        <div className={styles.questionHeader}>
+          <p className={styles.eyebrow}>Question</p>
+          {pageData.currentQuestion.questionAccuracy !== null ? (
+            <p className={styles.questionAccuracy}>
+              Question Accuracy{" "}
+              <strong>{pageData.currentQuestion.questionAccuracy}%</strong>
+            </p>
+          ) : null}
+        </div>
         <h2 id="question-heading">{pageData.currentQuestion.questionText}</h2>
 
         <form

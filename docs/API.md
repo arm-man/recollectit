@@ -169,10 +169,13 @@ An empty `categoryIds` array means all Categories and uncategorized Questions in
 type QuestionPrompt = {
   questionId: number;
   questionText: string;
+  questionAccuracy: number | null;
 };
 ```
 
 The Answer is not returned with the current Question.
+
+`questionAccuracy` is the Student's Question Accuracy across all Sessions, rounded to the nearest whole percentage. It is `null` when the Student has never answered the Question correctly; the Session page does not display Question Accuracy in that case.
 
 ### Session State
 
@@ -382,7 +385,8 @@ Success response — `200 OK`:
   },
   "currentQuestion": {
     "questionId": 101,
-    "questionText": "France"
+    "questionText": "France",
+    "questionAccuracy": 67
   },
   "session": {
     "roundNumber": 1,
@@ -427,7 +431,8 @@ Success response — `200 OK`:
 {
   "currentQuestion": {
     "questionId": 102,
-    "questionText": "Germany"
+    "questionText": "Germany",
+    "questionAccuracy": null
   },
   "session": {
     "roundNumber": 1,
@@ -490,7 +495,8 @@ Success response when the Session remains active — `200 OK`:
   },
   "currentQuestion": {
     "questionId": 102,
-    "questionText": "Germany"
+    "questionText": "Germany",
+    "questionAccuracy": 50
   },
   "session": {
     "roundNumber": 1,
