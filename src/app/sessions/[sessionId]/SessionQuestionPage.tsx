@@ -40,6 +40,7 @@ type GuessResponseData = {
 type PreviousSubmission =
   | {
       status: "result";
+      questionText: string;
       guessText: string;
       answerText: string;
       correct: boolean;
@@ -453,6 +454,7 @@ export function SessionQuestionPage({ sessionId }: SessionQuestionPageProps) {
       return;
     }
 
+    const submittedQuestionText = pageData.currentQuestion.questionText;
     const submittedGuess = guess;
     setIsSubmitting(true);
     setErrorMessage(null);
@@ -529,6 +531,7 @@ export function SessionQuestionPage({ sessionId }: SessionQuestionPageProps) {
       setGuess("");
       setPreviousSubmission({
         status: "result",
+        questionText: submittedQuestionText,
         guessText: submittedGuess,
         answerText: guessResponseData.previous.answerText,
         correct: guessResponseData.previous.correct,
@@ -678,22 +681,13 @@ export function SessionQuestionPage({ sessionId }: SessionQuestionPageProps) {
             <p className={styles.previousError}>{previousSubmission.message}</p>
           ) : (
             <dl className={styles.previousDetails}>
-              <div
-                className={
-                  previousSubmission.correct
-                    ? styles.correctStatus
-                    : styles.incorrectStatus
-                }
-              >
-                <dt>Result</dt>
-                <dd className={styles.resultText}>
-                  <span className={styles.resultIcon} aria-hidden="true">
-                    {previousSubmission.correct ? "✓" : "✕"}
-                  </span>
-                  <span>
-                    {previousSubmission.correct ? "Correct" : "Incorrect"}
-                  </span>
-                </dd>
+              <div>
+                <dt>Question</dt>
+                <dd>{previousSubmission.questionText}</dd>
+              </div>
+              <div>
+                <dt>Correct Answer</dt>
+                <dd>{previousSubmission.answerText}</dd>
               </div>
               <div
                 className={
@@ -703,11 +697,15 @@ export function SessionQuestionPage({ sessionId }: SessionQuestionPageProps) {
                 }
               >
                 <dt>Your Guess</dt>
-                <dd>{previousSubmission.guessText || "(empty)"}</dd>
-              </div>
-              <div>
-                <dt>Correct Answer</dt>
-                <dd>{previousSubmission.answerText}</dd>
+                <dd className={styles.guessText}>
+                  <span className={styles.visuallyHidden}>
+                    {previousSubmission.correct ? "Correct: " : "Incorrect: "}
+                  </span>
+                  <span className={styles.guessResultIcon} aria-hidden="true">
+                    {previousSubmission.correct ? "✓" : "✕"}
+                  </span>
+                  <span>{previousSubmission.guessText || "(empty)"}</span>
+                </dd>
               </div>
             </dl>
           )}

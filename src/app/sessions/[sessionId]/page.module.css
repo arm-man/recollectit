@@ -230,14 +230,25 @@
   background: #f7e4e1;
 }
 
-.resultText {
+.guessText {
   display: flex;
   align-items: center;
   gap: 8px;
   color: var(--color-text);
 }
 
-.resultIcon {
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.guessResultIcon {
   display: inline-flex;
   width: 1.55em;
   height: 1.55em;
@@ -250,11 +261,11 @@
   line-height: 1;
 }
 
-.correctStatus .resultIcon {
+.correctStatus .guessResultIcon {
   background: #2d6a4f;
 }
 
-.incorrectStatus .resultIcon {
+.incorrectStatus .guessResultIcon {
   background: var(--color-error);
 }
 

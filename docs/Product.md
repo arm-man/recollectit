@@ -157,17 +157,18 @@ Primary product success measure: students study regularly.
     - A **Skip for now** button
     - A **Submit** button
   - A section showing the previous Q&A:
-    - The most recently submitted Guess
+    - The previous Question
     - The Primary Answer
+    - The most recently submitted Guess
     - Whether the Guess was correct or incorrect
-    - The previous Question is not shown.
+    - Show three panes in this order: **Question**, **Correct Answer**, and **Your Guess**.
     - The section is a top-level pane displayed between the Session summary and the current Q&A pane.
 
 - Pressing Enter functions the same as clicking **Submit** when the Guess input has focus.
 - An empty Guess is valid.
 - The Guess is limited to 100 characters.
 - The Guess form and input will provide advisory hints requesting that browsers, virtual keyboards, and common password managers disable autofill, autocorrection, spellcheck, and credential or personal-information suggestions. The browser and keyboard retain final control and may ignore these hints.
-- The most recently submitted Guess and its Result will use a light green or red background with a stronger status-colored border. Guess text remains dark, and the Result includes an explicit correct or incorrect icon and label so the outcome does not rely on color alone. The Primary Answer remains visually neutral.
+- Only the **Your Guess** pane will use a light green or red background with a stronger status-colored border. Guess text remains dark, and an explicit correct or incorrect icon is displayed immediately before the Guess. The words **Correct** and **Incorrect** are not displayed visually, but the outcome remains available to assistive technology so it does not rely on color or the icon alone. The **Question** and **Correct Answer** panes remain visually neutral.
 - The previous Q&A section is hidden until the Student submits a Guess after opening or resuming the Session page.
 - **Skip for now** does not count as a Guess/Attempt and does not affect the previous Q&A section.
 - A skipped Question remains pending in the current Round, and a different pending Question is selected randomly. The skipped Question must be presented and Attempted later before the Round can end.
@@ -240,5 +241,5 @@ The Session end screen will display:
 - Core study interactions must not depend on hover.
 - On narrow screens, the Session Subject, Categories, Round, and progress will be presented as one compact summary, while wider screens may use the more spacious card layout.
 - On narrow screens, the visible **Your answer** label will be hidden while remaining available to assistive technology. When the empty Guess input is not focused, it will show **Type answer here** in light gray; the hint disappears when the input receives focus.
-- On narrow screens, the previous Q&A will use a compact single-panel presentation, decorative spacing will be reduced, and **Skip for now** and **Submit** will remain side by side while retaining touch-friendly sizes.
+- On narrow screens, the previous Q&A will use a compact single-column presentation in the same **Question**, **Correct Answer**, **Your Guess** order, decorative spacing will be reduced, and **Skip for now** and **Submit** will remain side by side while retaining touch-friendly sizes.
 - Responsive changes must not reduce the readability or usability of the wider-screen Session layout.
