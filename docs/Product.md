@@ -95,6 +95,10 @@ Primary product success measure: students study regularly.
     - If a historical Session was abandoned, show an "Abandoned" label instead of Session Accuracy.
     - The historical Session is click-able, and when clicked, direct them to the Session Complete page.
     - If there are no historical Sessions, this section will simply show a note saying "No completed sessions.".
+    - When there are at least six historical Sessions representing at least two unique Subjects, show a single-select Subject filter.
+      - The filter defaults to `All subjects` and lists the Subjects represented in the historical Sessions in alphabetical order.
+      - Changing the selection immediately filters the displayed historical Sessions without requiring another button.
+      - If fewer than six historical Sessions exist or they represent fewer than two unique Subjects, do not show the filter label or selector.
 
 ## Session Creation
 

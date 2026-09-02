@@ -150,6 +150,42 @@
   letter-spacing: -0.025em;
 }
 
+.completedSessionsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.completedSessionsFilter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.completedSessionsFilter label {
+  color: var(--color-text-muted);
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.completedSessionsFilter select {
+  min-height: 44px;
+  max-width: 220px;
+  padding: 9px 34px 9px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.completedSessionsFilter select:focus-visible {
+  outline: 3px solid var(--color-selection);
+  outline-offset: 3px;
+}
+
 .emptySessions {
   margin-top: 20px;
   color: var(--color-text-muted);
@@ -330,6 +366,20 @@
     min-height: 150px;
     padding: 24px 20px;
     border-radius: 12px;
+  }
+
+  .completedSessionsHeader {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .completedSessionsFilter {
+    justify-content: space-between;
+  }
+
+  .completedSessionsFilter select {
+    min-width: 0;
   }
 
   .activeSession {

@@ -65,6 +65,7 @@ type ActiveSessionRow = {
 
 type HistoricalSessionRow = {
   session_id: number;
+  subject_id: number;
   subject_title: string;
   categories: string[];
   completed_at: Date;
@@ -174,6 +175,7 @@ export type ActiveSession = {
 
 export type HistoricalSession = {
   sessionId: number;
+  subjectId: number;
   subject: string;
   categories: string[];
   completedAt: string;
@@ -354,6 +356,7 @@ export async function getHistoricalSessions(
   const result = await pool.query<HistoricalSessionRow>(
     `SELECT
        sessions.id AS session_id,
+       sessions.subject_id,
        subjects.title AS subject_title,
        sessions.completed_at,
        BOOL_OR(session_questions.completed_at IS NULL) AS is_abandoned,
@@ -382,6 +385,7 @@ export async function getHistoricalSessions(
 
   return result.rows.map((row) => ({
     sessionId: row.session_id,
+    subjectId: row.subject_id,
     subject: row.subject_title,
     categories: row.categories,
     completedAt: row.completed_at.toISOString(),

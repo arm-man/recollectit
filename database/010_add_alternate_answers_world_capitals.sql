@@ -70,4 +70,16 @@ UPDATE questions
 SET alternate_answer_text = 'Khartum'
 WHERE answer_text = 'Khartoum';
 
+UPDATE questions
+SET alternate_answer_text = 'Saint Paul'
+WHERE answer_text = 'St. Paul';
+
+UPDATE questions
+SET alternate_answer_text = 'Samuel Clemens'
+WHERE answer_text = 'Mark Twain';
+
+UPDATE questions
+SET alternate_answer_text = 'Mary Ann Evans'
+WHERE answer_text = 'George Eliot';
+
 COMMIT;

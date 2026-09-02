@@ -56,7 +56,6 @@ export default async function LandingPage() {
           </section>
 
           <section className={styles.sessionSection}>
-            <h2>Completed Sessions</h2>
             <CompletedSessions sessions={historicalSessions} />
           </section>
         </div>
