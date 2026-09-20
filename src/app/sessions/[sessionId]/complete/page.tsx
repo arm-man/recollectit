@@ -137,7 +137,7 @@ export default async function SessionCompletePage({
 
   if (result.status === "forbidden") {
     await logPageError(
-      `Student ${student.id} attempted to view Session Complete page for Session ${sessionId}.`,
+      `Student "${student.username}" attempted to view Session Complete page for Session ${sessionId}.`,
     );
     return (
       <PageShell>
