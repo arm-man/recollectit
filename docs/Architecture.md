@@ -30,6 +30,7 @@ The initial release will use a **single full-stack Next.js application** connect
 * **PostgreSQL client:** `pg`
 * **Application hosting:** Vercel
 * **Database hosting:** Neon
+* **Log email delivery:** Resend
 * **Package manager:** npm
 * **Source control:** Git and GitHub
 
@@ -368,14 +369,20 @@ Do not introduce a separate validation framework unless native TypeScript/applic
 
 ## Secrets and Configuration
 
-The application requires at least a PostgreSQL connection string.
+The application requires a PostgreSQL connection string. Log email notifications also require a Resend API key and destination email address.
 
 Database credentials must not be committed to Git.
 
 Use:
 
-* `.env.local` for the development database connection.
-* Vercel environment variables for the production database connection.
+* `.env.local` for development environment variables.
+* Vercel environment variables for production configuration.
+
+Use these server-only environment variables:
+
+* `DATABASE_URL` for the PostgreSQL connection string.
+* `RESEND_API_KEY` for the Resend API key.
+* `LOG_EMAIL_TO` for the log notification recipient.
 
 Any future credentials or authentication secrets should be handled the same way.
 
@@ -400,7 +407,9 @@ Do not create a custom error-handling framework unless one becomes useful.
 
 Write server-side errors and operational warnings to the PostgreSQL `logs` table. Errors use the default `error` severity; warnings use severity `warning`. Log messages must not contain credentials, connection strings, or other secrets.
 
-Do not introduce another logging, monitoring, tracing, or observability service initially.
+After each successful application insert into `logs`, send a plain-text email through Resend. The email body is the exact stored log message. Email delivery is best-effort: a send failure is written to the server console and must not roll back the log insert or fail the user-facing operation. Keep this behavior in the centralized logging flow so callers do not implement email delivery separately.
+
+Do not introduce another logging, monitoring, tracing, or observability service beyond this Resend notification initially.
 
 Add one only if troubleshooting actual production use demonstrates a need.
 

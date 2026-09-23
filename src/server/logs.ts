@@ -1,17 +1,27 @@
 import "server-only";
 
 import { pool } from "@/server/db";
+import { sendLogEmail } from "@/server/log-email";
 
-export async function logInfo(message: string): Promise<void> {
+async function insertLog(
+  severity: "error" | "info",
+  message: string,
+): Promise<void> {
   await pool.query(
     `INSERT INTO logs (severity, message)
-     VALUES ('info', $1)`,
-    [message],
+     VALUES ($1, $2)`,
+    [severity, message],
   );
+
+  await sendLogEmail(message);
+}
+
+export async function logInfo(message: string): Promise<void> {
+  await insertLog("info", message);
 }
 
 export async function logError(message: string): Promise<void> {
-  await pool.query(`INSERT INTO logs (message) VALUES ($1)`, [message]);
+  await insertLog("error", message);
 }
 
 export async function logUnexpectedError(
@@ -23,7 +33,5 @@ export async function logUnexpectedError(
       ? `${error.name}: ${error.message}`
       : "Unknown error";
 
-  await pool.query(`INSERT INTO logs (message) VALUES ($1)`, [
-    `${context}: ${errorDescription}`,
-  ]);
+  await insertLog("error", `${context}: ${errorDescription}`);
 }
