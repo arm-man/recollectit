@@ -242,9 +242,7 @@
 }
 
 .categoryList {
-  max-height: 230px;
   margin-top: 12px;
-  overflow-y: auto;
   border: 1px solid var(--color-border);
   border-radius: 8px;
   background: var(--color-page-background);
