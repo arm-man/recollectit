@@ -25,6 +25,13 @@ test("uses each Answer's length to determine its allowed distance", () => {
   assert.equal(isGuessCorrect("colourr", "huex", "colours"), true);
 });
 
+test("applies distance thresholds at Answer length boundaries", () => {
+  assert.equal(isGuessCorrect("cats", "catx"), false);
+  assert.equal(isGuessCorrect("house", "mouse"), true);
+  assert.equal(isGuessCorrect("abcdefghi", "xbcdefghx"), false);
+  assert.equal(isGuessCorrect("abcdefghij", "xbcdefghix"), true);
+});
+
 test("preserves single-Answer behavior when no Alternate Answer exists", () => {
   assert.equal(isGuessCorrect("Londno", "London"), true);
   assert.equal(isGuessCorrect("Londxx", "London"), false);

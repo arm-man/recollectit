@@ -204,7 +204,7 @@ Examples:
 - `C’est combien?` -> `cestcombien`
 
 After normalization, compare the Guess independently with the Primary Answer and, when present, the Alternate Answer. Use Damerau-Levenshtein distance to determine whether each comparison is close enough to be considered correct. The Attempt is correct when either Answer matches.
-  - Use a distance of 0 for 1–4 characters, distance of 1 for 5–8 characters, distance of 2 for 9 or more characters.
+  - Use a distance of 0 for 1–4 characters, distance of 1 for 5–9 characters, distance of 2 for 10 or more characters.
   - The number of characters is defined by the particular Answer being compared, not the Guess. The Primary and Alternate Answers may therefore use different distance thresholds.
   - A Guess whose normalized value is empty is valid and will be automatically marked as incorrect.
 

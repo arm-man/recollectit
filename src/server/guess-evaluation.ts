@@ -99,7 +99,7 @@ export function isGuessCorrect(
   return answers.some((answer) => {
     const normalizedAnswer = normalizeGuessValue(answer);
     const answerLength = Array.from(normalizedAnswer).length;
-    const maximumDistance = answerLength <= 4 ? 0 : answerLength <= 8 ? 1 : 2;
+    const maximumDistance = answerLength <= 4 ? 0 : answerLength <= 9 ? 1 : 2;
 
     return (
       getDamerauLevenshteinDistance(normalizedGuess, normalizedAnswer) <=
