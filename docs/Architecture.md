@@ -29,6 +29,7 @@ The initial release will use a **single full-stack Next.js application** connect
 * **Database access:** Direct parameterized SQL
 * **PostgreSQL client:** `pg`
 * **Application hosting:** Vercel
+* **Web analytics:** Vercel Web Analytics
 * **Database hosting:** Neon
 * **Log email delivery:** Resend
 * **Package manager:** npm
@@ -409,6 +410,8 @@ Write server-side errors and operational warnings to the PostgreSQL `logs` table
 
 After each successful application insert into `logs`, send a plain-text email through Resend. The email body is the exact stored log message. Email delivery is best-effort: a send failure is written to the server console and must not roll back the log insert or fail the user-facing operation. Keep this behavior in the centralized logging flow so callers do not implement email delivery separately.
 
+Use Vercel Web Analytics for privacy-friendly aggregate website traffic analytics. Integrate it through the root application layout using the `@vercel/analytics` package; it does not require application environment variables.
+
 Do not introduce another logging, monitoring, tracing, or observability service beyond this Resend notification initially.
 
 Add one only if troubleshooting actual production use demonstrates a need.
@@ -498,7 +501,7 @@ Do not introduce the following unless a requirement changes:
 * Distributed caching.
 * Dedicated logging platform.
 * Dedicated monitoring platform.
-* Dedicated analytics infrastructure.
+* Dedicated analytics infrastructure beyond Vercel Web Analytics.
 * Search engine.
 * CDN configuration beyond hosting defaults.
 
