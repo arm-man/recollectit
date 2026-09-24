@@ -118,7 +118,7 @@ The `categories` table therefore needs a supporting unique constraint on `(subje
 
 Both Answers remain on the Question row because the product permits at most two Answers with fixed, different roles. A separate answers table would add indirection without supporting a current requirement.
 
-Normalized Answer values are not stored. Guess normalization and the independent Damerau-Levenshtein comparisons against each available Answer occur in TypeScript as defined by `Product.md` and `Architecture.md`.
+Normalized or token-expanded Answer values are not stored. Token expansion, Guess normalization, preferred display formatting, and the independent Damerau-Levenshtein comparisons against each available Answer occur in TypeScript as defined by `Product.md` and `Architecture.md`.
 
 ### `sessions`
 

@@ -1,3 +1,8 @@
+import {
+  expandAnswerTokens,
+  type AnswerTokenErrorReporter,
+} from "./answer-tokens.ts";
+
 const SPECIAL_LETTER_REPLACEMENTS: Readonly<Record<string, string>> = {
   ø: "o",
   Ø: "o",
@@ -84,6 +89,7 @@ export function isGuessCorrect(
   guess: string,
   primaryAnswer: string,
   alternateAnswer: string | null = null,
+  reportTokenError?: AnswerTokenErrorReporter,
 ): boolean {
   const normalizedGuess = normalizeGuessValue(guess);
 
@@ -95,8 +101,11 @@ export function isGuessCorrect(
     alternateAnswer === null
       ? [primaryAnswer]
       : [primaryAnswer, alternateAnswer];
+  const expandedAnswers = answers.flatMap((answer) =>
+    expandAnswerTokens(answer, reportTokenError),
+  );
 
-  return answers.some((answer) => {
+  return expandedAnswers.some((answer) => {
     const normalizedAnswer = normalizeGuessValue(answer);
     const answerLength = Array.from(normalizedAnswer).length;
     const maximumDistance = answerLength <= 4 ? 0 : answerLength <= 9 ? 1 : 2;

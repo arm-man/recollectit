@@ -340,12 +340,15 @@ Guess evaluation should be implemented as ordinary TypeScript code rather than i
 
 The implementation should:
 
-1. Normalize the Guess once and normalize each available Answer according to `Product.md`.
-2. Compare the Guess independently with the Primary Answer and optional Alternate Answer.
-3. Calculate Damerau-Levenshtein distance and apply the threshold for the particular Answer being compared.
-4. Return true when either Answer matches.
+1. Expand supported Answer tokens into validation variants through a centralized, pure TypeScript token processor.
+2. Normalize the Guess once and normalize each available Answer variant according to `Product.md`.
+3. Compare the Guess independently with the Primary Answer and optional Alternate Answer variants.
+4. Calculate Damerau-Levenshtein distance and apply the threshold for the particular Answer variant being compared.
+5. Return true when any variant matches.
 
 Keep this logic independent enough to unit test directly.
+
+The same token processor must provide the preferred display form before a Primary Answer is returned to browser-facing code. Unknown or malformed tokens remain literal and are reported through the centralized server logging flow without failing the Session workflow.
 
 The normalized values do not need to be stored in the database unless a future requirement demonstrates a reason to do so.
 The Alternate Answer remains server-only and is not included in browser-facing data. The API and server-rendered completion data expose only the Primary Answer.

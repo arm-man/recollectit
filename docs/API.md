@@ -516,7 +516,7 @@ Success response when the Guess completes the Session — `200 OK`:
 
 The Resonse questionId shall be different from the Request questionId, if possible. The only time it is not possible is if there is only one questionId in the Session that has not been completed.
 
-`previous.answerText` always contains the Primary Answer, including when the Guess matched the Alternate Answer. The Alternate Answer is not returned to the browser.
+`previous.answerText` always contains the Primary Answer in its preferred display form, including when the Guess matched the Alternate Answer. Supported Answer tokens are replaced with their preferred values before the response is created. The Alternate Answer is not returned to the browser.
 
 Expected errors:
 
@@ -572,7 +572,7 @@ The following data is expected to be loaded by Server Components through server-
 
 - Landing Page active and historical Session lists.
 - Session Creation Subject and Category options.
-- Session Complete page details and session-only Question Accuracy results calculated from the completed Session's Attempts, without Attempts from the Student's other Sessions.
+- Session Complete page details, preferred display forms of Primary Answers, and session-only Question Accuracy results calculated from the completed Session's Attempts, without Attempts from the Student's other Sessions.
 - The default Subject from the Student's last completed Session.
 
 These server-side data shapes should be kept close to the pages that use them. They do not need public HTTP contracts in this document unless browser-side requirements later make an endpoint useful.

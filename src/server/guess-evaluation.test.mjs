@@ -36,3 +36,46 @@ test("preserves single-Answer behavior when no Alternate Answer exists", () => {
   assert.equal(isGuessCorrect("Londno", "London"), true);
   assert.equal(isGuessCorrect("Londxx", "London"), false);
 });
+
+test("accepts every third-person-singular substitution in the Primary Answer", () => {
+  for (const guess of ["it is raining", "she is raining", "he is raining"]) {
+    assert.equal(isGuessCorrect(guess, "{3sg-it} is raining"), true);
+  }
+});
+
+test("accepts every substitution regardless of the preferred display value", () => {
+  for (const preferredValue of ["she", "he"]) {
+    for (const guess of ["it is happy", "she is happy", "he is happy"]) {
+      assert.equal(
+        isGuessCorrect(guess, `{3sg-${preferredValue}} is happy`),
+        true,
+      );
+    }
+  }
+});
+
+test("rejects a substitution not supported by the token", () => {
+  assert.equal(isGuessCorrect("they are raining", "{3sg-it} is raining"), false);
+});
+
+test("supports a token in the Alternate Answer", () => {
+  assert.equal(
+    isGuessCorrect(
+      "HE HAS ARRIVED!!!",
+      "The train arrived",
+      "{3sg-she} has arrived",
+    ),
+    true,
+  );
+});
+
+test("preserves normalization and fuzzy matching for tokenized Answers", () => {
+  assert.equal(
+    isGuessCorrect("  SHE   IS DEJA HERE!!! ", "{3sg-it} is déjà here"),
+    true,
+  );
+  assert.equal(
+    isGuessCorrect("he is alreayd waiting", "{3sg-she} is already waiting"),
+    true,
+  );
+});

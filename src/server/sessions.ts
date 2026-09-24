@@ -1,5 +1,6 @@
 import "server-only";
 
+import { formatAnswerForDisplay } from "@/server/answer-tokens";
 import {
   countEligibleQuestions,
   createSessionWithQuestions,
@@ -14,6 +15,7 @@ import {
   recordGuess,
 } from "@/server/session-db";
 import { isGuessCorrect } from "@/server/guess-evaluation";
+import { logError } from "@/server/logs";
 
 export type AccuracyOperator = "lte" | "gte";
 
@@ -145,6 +147,21 @@ export type GetSessionCompleteResult =
   | { status: "forbidden" }
   | { status: "in-progress" };
 
+async function logAnswerTokenErrors(
+  context: string,
+  errors: ReadonlySet<string>,
+): Promise<void> {
+  if (errors.size === 0) {
+    return;
+  }
+
+  try {
+    await logError(`${context}: ${Array.from(errors).join(" ")}`);
+  } catch {
+    // Invalid Answer data must not prevent the Session workflow from running.
+  }
+}
+
 export async function previewSessionQuestionCount(
   studentId: number,
   subjectId: number,
@@ -270,6 +287,19 @@ export async function getSessionComplete(
     return { status: "in-progress" };
   }
 
+  const tokenErrors = new Set<string>();
+  const questions = record.questions.map((question) => ({
+    ...question,
+    answer: formatAnswerForDisplay(question.answer, (message) =>
+      tokenErrors.add(`Question ${question.questionId}: ${message}`),
+    ),
+  }));
+
+  await logAnswerTokenErrors(
+    `Session Complete Answer token processing failed for Session ${sessionId}`,
+    tokenErrors,
+  );
+
   return {
     status: "success",
     session: {
@@ -280,7 +310,7 @@ export async function getSessionComplete(
       uniqueQuestionCount: record.uniqueQuestionCount,
       guessCount: record.guessCount,
       sessionAccuracy: record.sessionAccuracy,
-      questions: record.questions,
+      questions,
     },
   };
 }
@@ -396,11 +426,23 @@ export async function submitGuess(
     return { status: "question-already-completed" };
   }
 
+  const tokenErrors = new Set<string>();
   const correct = isGuessCorrect(
     guess,
     questionRecord.answerText,
     questionRecord.alternateAnswerText,
+    (message) => tokenErrors.add(message),
   );
+  const displayAnswerText = formatAnswerForDisplay(
+    questionRecord.answerText,
+    (message) => tokenErrors.add(message),
+  );
+
+  await logAnswerTokenErrors(
+    `Answer token processing failed for Session ${sessionId}, Question ${questionId}`,
+    tokenErrors,
+  );
+
   const result = await recordGuess(sessionId, questionId, correct);
 
   if (result.status === "not-recorded") {
@@ -429,7 +471,7 @@ export async function submitGuess(
   }
 
   const previous = {
-    answerText: questionRecord.answerText,
+    answerText: displayAnswerText,
     correct,
   };
 

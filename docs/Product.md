@@ -49,6 +49,7 @@ Primary product success measure: students study regularly.
 - Every Question has exactly one Primary Answer and may have one Alternate Answer.
 - A Guess is correct when it matches either Answer according to the Guess Evaluation rules.
 - Only the Primary Answer is displayed to Students.
+- Answers may contain substitution tokens. The stored token is expanded for Guess evaluation and replaced with its preferred value before the Primary Answer is displayed; raw supported tokens are never shown to Students.
 - Subjects and Categories are global/shared. There is no such thing as private Subject/Questions for a specific Student.
 - Creating or editing Subjects, Questions, Answers, etc. will not be available to Students. #FutureRelease
 - In the initial release, only the Administrator can create, edit, or delete Subjects, Categories, Questions, and Answers. Administrative functionality is not available through the Student interface.
@@ -207,6 +208,8 @@ After normalization, compare the Guess independently with the Primary Answer and
   - Use a distance of 0 for 1–4 characters, distance of 1 for 5–9 characters, distance of 2 for 10 or more characters.
   - The number of characters is defined by the particular Answer being compared, not the Guess. The Primary and Alternate Answers may therefore use different distance thresholds.
   - A Guess whose normalized value is empty is valid and will be automatically marked as incorrect.
+
+Before normalization, expand each `{3sg-<preferred value>}` token in each available Answer into separate Answer variants using `it`, `she`, and `he`. Evaluate every variant with the same normalization and Answer-specific distance rules above. Multiple tokens may appear anywhere in an Answer and produce every combination of supported substitutions. For display, replace each supported token with its preferred value after the hyphen. Unknown, malformed, or unsupported tokens remain literal and are logged without interrupting the Session.
 
 ## Accuracy
 
