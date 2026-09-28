@@ -9,6 +9,7 @@
 -- subject_id is resolved from subjects.title = 'Spanish'
 -- category_id is resolved from one of six Spanish phrase category titles
 -- alternate_answer_text_2 supplies an optional third accepted English answer
+-- Phrases with straightforward word-for-word English equivalents were replaced with less literal expressions.
 
 INSERT INTO subjects (title) VALUES ('Spanish Phrases');
 
@@ -22,9 +23,9 @@ CROSS JOIN (
         ('Time'),
         ('Connectors'),
         ('Verbal Expressions'),
-		('Actions'),
-		('Reactions'),
-		('Comparison/Conditions/Circumstance')
+               ('Actions'),
+               ('Reactions'),
+               ('Comparison/Conditions/Circumstance')
 ) AS c(title)
 WHERE s.title = 'Spanish Phrases';
 
@@ -162,10 +163,10 @@ INSERT INTO questions (subject_id, category_id, question_text, answer_text, alte
 VALUES (
     (SELECT id FROM subjects WHERE title = 'Spanish Phrases'),
     (SELECT id FROM categories WHERE title = 'Time'),
-    'poco a poco',
-    'little by little',
-    'gradually',
-    'bit by bit'
+    'hace poco',
+    'recently',
+    'a short while ago',
+    'not long ago'
 );
 
 INSERT INTO questions (subject_id, category_id, question_text, answer_text, alternate_answer_text, alternate_answer_text_2)
@@ -182,20 +183,20 @@ INSERT INTO questions (subject_id, category_id, question_text, answer_text, alte
 VALUES (
     (SELECT id FROM subjects WHERE title = 'Spanish Phrases'),
     (SELECT id FROM categories WHERE title = 'Connectors'),
-    'de acuerdo con',
-    'according to',
-    'in accordance with',
-    'in agreement with'
+    'ahora bien',
+    'however',
+    'that said',
+    'now then'
 );
 
 INSERT INTO questions (subject_id, category_id, question_text, answer_text, alternate_answer_text, alternate_answer_text_2)
 VALUES (
     (SELECT id FROM subjects WHERE title = 'Spanish Phrases'),
     (SELECT id FROM categories WHERE title = 'Connectors'),
-    'en realidad',
-    'actually',
+    'de hecho',
     'in fact',
-    'in reality'
+    'actually',
+    'as a matter of fact'
 );
 
 INSERT INTO questions (subject_id, category_id, question_text, answer_text, alternate_answer_text, alternate_answer_text_2)
@@ -632,20 +633,20 @@ INSERT INTO questions (subject_id, category_id, question_text, answer_text, alte
 VALUES (
     (SELECT id FROM subjects WHERE title = 'Spanish Phrases'),
     (SELECT id FROM categories WHERE title = 'Comparison/Conditions/Circumstance'),
-    'por casualidad',
-    'by chance',
-    'by any chance',
-    'accidentally'
+    'a duras penas',
+    'barely',
+    'with great difficulty',
+    'hardly'
 );
 
 INSERT INTO questions (subject_id, category_id, question_text, answer_text, alternate_answer_text, alternate_answer_text_2)
 VALUES (
     (SELECT id FROM subjects WHERE title = 'Spanish Phrases'),
     (SELECT id FROM categories WHERE title = 'Reactions'),
-    'a propósito',
-    'on purpose',
-    'by the way',
-    'deliberately'
+    'qué va',
+    'no way',
+    'not at all',
+    'absolutely not'
 );
 
 INSERT INTO questions (subject_id, category_id, question_text, answer_text, alternate_answer_text, alternate_answer_text_2)
@@ -662,30 +663,30 @@ INSERT INTO questions (subject_id, category_id, question_text, answer_text, alte
 VALUES (
     (SELECT id FROM subjects WHERE title = 'Spanish Phrases'),
     (SELECT id FROM categories WHERE title = 'Reactions'),
-    'en serio',
-    'seriously',
-    'for real',
-    'really'
+    'ni hablar',
+    'no way',
+    'absolutely not',
+    'forget it'
 );
 
 INSERT INTO questions (subject_id, category_id, question_text, answer_text, alternate_answer_text, alternate_answer_text_2)
 VALUES (
     (SELECT id FROM subjects WHERE title = 'Spanish Phrases'),
     (SELECT id FROM categories WHERE title = 'Connectors'),
-    'en general',
-    'in general',
-    'generally',
-    'overall'
+    'a decir verdad',
+    'truth be told',
+    'to tell the truth',
+    'honestly'
 );
 
 INSERT INTO questions (subject_id, category_id, question_text, answer_text, alternate_answer_text, alternate_answer_text_2)
 VALUES (
     (SELECT id FROM subjects WHERE title = 'Spanish Phrases'),
     (SELECT id FROM categories WHERE title = 'Connectors'),
-    'en particular',
-    'in particular',
-    'particularly',
-    'specifically'
+    'eso sí',
+    'mind you',
+    'that said',
+    'however'
 );
 
 INSERT INTO questions (subject_id, category_id, question_text, answer_text, alternate_answer_text, alternate_answer_text_2)
@@ -712,30 +713,30 @@ INSERT INTO questions (subject_id, category_id, question_text, answer_text, alte
 VALUES (
     (SELECT id FROM subjects WHERE title = 'Spanish Phrases'),
     (SELECT id FROM categories WHERE title = 'Connectors'),
-    'además de',
-    'in addition to',
-    'besides',
-    'as well as'
+    'aun así',
+    'even so',
+    'nevertheless',
+    'still'
 );
 
 INSERT INTO questions (subject_id, category_id, question_text, answer_text, alternate_answer_text, alternate_answer_text_2)
 VALUES (
     (SELECT id FROM subjects WHERE title = 'Spanish Phrases'),
     (SELECT id FROM categories WHERE title = 'Connectors'),
-    'en primer lugar',
-    'first of all',
-    'in the first place',
-    'firstly'
+    'dicho esto',
+    'that said',
+    'having said that',
+    'with that said'
 );
 
 INSERT INTO questions (subject_id, category_id, question_text, answer_text, alternate_answer_text, alternate_answer_text_2)
 VALUES (
     (SELECT id FROM subjects WHERE title = 'Spanish Phrases'),
     (SELECT id FROM categories WHERE title = 'Connectors'),
-    'en segundo lugar',
-    'secondly',
-    'in the second place',
-    'second of all'
+    'de ahí que',
+    'which is why',
+    'hence',
+    'therefore'
 );
 
 INSERT INTO questions (subject_id, category_id, question_text, answer_text, alternate_answer_text, alternate_answer_text_2)
@@ -752,20 +753,20 @@ INSERT INTO questions (subject_id, category_id, question_text, answer_text, alte
 VALUES (
     (SELECT id FROM subjects WHERE title = 'Spanish Phrases'),
     (SELECT id FROM categories WHERE title = 'Connectors'),
-    'en resumen',
-    'in summary',
-    'in short',
-    'to sum up'
+    'sea como sea',
+    'be that as it may',
+    'either way',
+    'whatever happens'
 );
 
 INSERT INTO questions (subject_id, category_id, question_text, answer_text, alternate_answer_text, alternate_answer_text_2)
 VALUES (
     (SELECT id FROM subjects WHERE title = 'Spanish Phrases'),
     (SELECT id FROM categories WHERE title = 'Connectors'),
-    'es decir',
-    'that is',
-    'in other words',
-    'namely'
+    'más bien',
+    'rather',
+    'more like',
+    'instead'
 );
 
 INSERT INTO questions (subject_id, category_id, question_text, answer_text, alternate_answer_text, alternate_answer_text_2)
@@ -792,20 +793,20 @@ INSERT INTO questions (subject_id, category_id, question_text, answer_text, alte
 VALUES (
     (SELECT id FROM subjects WHERE title = 'Spanish Phrases'),
     (SELECT id FROM categories WHERE title = 'Comparison/Conditions/Circumstance'),
-    'en lugar de',
-    'instead of',
-    'in place of',
-    'rather than'
+    'de sobra',
+    'more than enough',
+    'plenty',
+    'to spare'
 );
 
 INSERT INTO questions (subject_id, category_id, question_text, answer_text, alternate_answer_text, alternate_answer_text_2)
 VALUES (
     (SELECT id FROM subjects WHERE title = 'Spanish Phrases'),
     (SELECT id FROM categories WHERE title = 'Connectors'),
-    'con respecto a',
-    'with regard to',
-    'regarding',
-    'concerning'
+    'por más que',
+    'no matter how much',
+    'however much',
+    'even though'
 );
 
 INSERT INTO questions (subject_id, category_id, question_text, answer_text, alternate_answer_text, alternate_answer_text_2)
@@ -842,30 +843,30 @@ INSERT INTO questions (subject_id, category_id, question_text, answer_text, alte
 VALUES (
     (SELECT id FROM subjects WHERE title = 'Spanish Phrases'),
     (SELECT id FROM categories WHERE title = 'Time'),
-    'antes de que',
-    'before',
-    'before the time when',
-    'prior to'
+    'al rato',
+    'after a while',
+    'a little later',
+    'shortly afterward'
 );
 
 INSERT INTO questions (subject_id, category_id, question_text, answer_text, alternate_answer_text, alternate_answer_text_2)
 VALUES (
     (SELECT id FROM subjects WHERE title = 'Spanish Phrases'),
     (SELECT id FROM categories WHERE title = 'Time'),
-    'después de que',
-    'after',
-    'after the time when',
-    'following'
+    'a estas alturas',
+    'by now',
+    'at this point',
+    'at this stage'
 );
 
 INSERT INTO questions (subject_id, category_id, question_text, answer_text, alternate_answer_text, alternate_answer_text_2)
 VALUES (
     (SELECT id FROM subjects WHERE title = 'Spanish Phrases'),
     (SELECT id FROM categories WHERE title = 'Time'),
-    'hasta que',
-    'until',
-    'up until',
-    'up to the point that'
+    'tarde o temprano',
+    'sooner or later',
+    'eventually',
+    'at some point'
 );
 
 INSERT INTO questions (subject_id, category_id, question_text, answer_text, alternate_answer_text, alternate_answer_text_2)
@@ -882,20 +883,20 @@ INSERT INTO questions (subject_id, category_id, question_text, answer_text, alte
 VALUES (
     (SELECT id FROM subjects WHERE title = 'Spanish Phrases'),
     (SELECT id FROM categories WHERE title = 'Time'),
-    'de ahora en adelante',
-    'from now on',
-    'henceforth',
-    'going forward'
+    'por aquel entonces',
+    'back then',
+    'at that time',
+    'in those days'
 );
 
 INSERT INTO questions (subject_id, category_id, question_text, answer_text, alternate_answer_text, alternate_answer_text_2)
 VALUES (
     (SELECT id FROM subjects WHERE title = 'Spanish Phrases'),
     (SELECT id FROM categories WHERE title = 'Time'),
-    'a partir de ahora',
-    'from now on',
-    'starting now',
-    'from this point on'
+    'a la larga',
+    'in the long run',
+    'eventually',
+    'over time'
 );
 
 INSERT INTO questions (subject_id, category_id, question_text, answer_text, alternate_answer_text, alternate_answer_text_2)
@@ -912,10 +913,10 @@ INSERT INTO questions (subject_id, category_id, question_text, answer_text, alte
 VALUES (
     (SELECT id FROM subjects WHERE title = 'Spanish Phrases'),
     (SELECT id FROM categories WHERE title = 'Time'),
-    'a tiempo',
-    'on time',
-    'in time',
-    'in good time'
+    'dentro de poco',
+    'soon',
+    'before long',
+    'in a little while'
 );
 
 INSERT INTO questions (subject_id, category_id, question_text, answer_text, alternate_answer_text, alternate_answer_text_2)
@@ -952,10 +953,10 @@ INSERT INTO questions (subject_id, category_id, question_text, answer_text, alte
 VALUES (
     (SELECT id FROM subjects WHERE title = 'Spanish Phrases'),
     (SELECT id FROM categories WHERE title = 'Reactions'),
-    'una vez más',
-    'once again',
-    'one more time',
-    'again'
+    'no pasa nada',
+    'it''s okay',
+    'no problem',
+    'don''t worry'
 );
 
 INSERT INTO questions (subject_id, category_id, question_text, answer_text, alternate_answer_text, alternate_answer_text_2)

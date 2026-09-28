@@ -14,7 +14,7 @@ Primary product success measure: students study regularly.
 - **Username**: the name used to access a student's data.
 - **Question**: a prompt presented to the Student.
 - **Primary Answer**: the required correct Answer used for Guess evaluation and displayed to the Student.
-- **Alternate Answer**: any optional additional correct Answer used only for Guess evaluation and never displayed to the Student.
+- **Alternate Answer**: any optional additional correct Answer used for Guess evaluation and displayed after an incorrect Guess.
 - **Guess**: the Student's submitted answer to a Question.
 - **Attempt**: one submitted Guess for a Question. Attempts are counted, but individual Guesses and Attempt details are not retained.
 - **Subject**: a topic containing Questions, e.g. `World Capitals`.
@@ -48,8 +48,8 @@ Primary product success measure: students study regularly.
 - If a Subject has no Categories, all Questions from the Subject will be uncategorized.
 - Every Question has exactly one Primary Answer and may have Alternate Answers.
 - A Guess is correct when it matches any available Answer according to the Guess Evaluation rules.
-- Only the Primary Answer is displayed to Students.
-- Answers may contain substitution tokens. The stored token is expanded for Guess evaluation and replaced with its preferred value before the Primary Answer is displayed; raw supported tokens are never shown to Students.
+- The Primary Answer is displayed after every Guess. Alternate Answers are also displayed after an incorrect Guess.
+- Answers may contain substitution tokens. The stored token is expanded for Guess evaluation and replaced with its preferred value before an Answer is displayed; raw supported tokens are never shown to Students.
 - Subjects and Categories are global/shared. There is no such thing as private Subject/Questions for a specific Student.
 - Creating or editing Subjects, Questions, Answers, etc. will not be available to Students. #FutureRelease
 - In the initial release, only the Administrator can create, edit, or delete Subjects, Categories, Questions, and Answers. Administrative functionality is not available through the Student interface.
@@ -163,10 +163,11 @@ Primary product success measure: students study regularly.
     - A **Submit** button
   - A section showing the previous Q&A:
     - The previous Question
-    - The Primary Answer
+    - The Primary Answer and, when the Guess is incorrect, all Alternate Answers
     - The most recently submitted Guess
     - Whether the Guess was correct or incorrect
     - Show three panes in this order: **Question**, **Correct Answer**, and **Your Guess**.
+    - In the **Correct Answer** pane, show each displayed Answer on its own line.
     - The section is a top-level pane displayed between the Session summary and the current Q&A pane.
 
 - Pressing Enter functions the same as clicking **Submit** when the Guess input has focus.

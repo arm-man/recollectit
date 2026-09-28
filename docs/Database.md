@@ -104,8 +104,8 @@ Stores exactly three possible Answers for each Question: one required Primary An
 | `category_id` | `integer` | Yes | Optional Category. |
 | `question_text` | `text` | No | Prompt shown to the Student. |
 | `answer_text` | `text` | No | Primary Answer used for Guess evaluation and displayed to the Student. |
-| `alternate_answer_text` | `text` | Yes | Optional Alternate Answer used only for Guess evaluation. |
-| `alternate_answer_text_2` | `text` | Yes | Second optional Alternate Answer used only for Guess evaluation. |
+| `alternate_answer_text` | `text` | Yes | Optional Alternate Answer used for Guess evaluation and incorrect-Guess feedback. |
+| `alternate_answer_text_2` | `text` | Yes | Second optional Alternate Answer used for Guess evaluation and incorrect-Guess feedback. |
 
 Constraints:
 

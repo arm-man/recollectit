@@ -490,7 +490,7 @@ Success response when the Session remains active — `200 OK`:
 {
   "sessionCompleted": false,
   "previous": {
-    "answerText": "Paris",
+    "answerTexts": ["Paris"],
     "correct": true
   },
   "currentQuestion": {
@@ -516,7 +516,7 @@ Success response when the Guess completes the Session — `200 OK`:
 
 The Resonse questionId shall be different from the Request questionId, if possible. The only time it is not possible is if there is only one questionId in the Session that has not been completed.
 
-`previous.answerText` always contains the Primary Answer in its preferred display form, including when the Guess matched an Alternate Answer. Supported Answer tokens are replaced with their preferred values before the response is created. Alternate Answers are not returned to the browser.
+`previous.answerTexts` contains the Primary Answer when the Guess is correct and all available Answers when it is incorrect. Answers retain Primary-then-Alternate order and use their preferred display forms. Supported Answer tokens are replaced with their preferred values before the response is created.
 
 Expected errors:
 

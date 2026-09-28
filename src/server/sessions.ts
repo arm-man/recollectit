@@ -97,7 +97,7 @@ export type SubmitGuessResult =
       status: "success";
       sessionCompleted: false;
       previous: {
-        answerText: string;
+        answerTexts: string[];
         correct: boolean;
       };
       currentQuestion: {
@@ -437,9 +437,9 @@ export async function submitGuess(
     answers,
     (message) => tokenErrors.add(message),
   );
-  const displayAnswerText = formatAnswerForDisplay(
-    questionRecord.answerText,
-    (message) => tokenErrors.add(message),
+  const displayAnswerTexts = (correct ? answers.slice(0, 1) : answers).map(
+    (answer) =>
+      formatAnswerForDisplay(answer, (message) => tokenErrors.add(message)),
   );
 
   await logAnswerTokenErrors(
@@ -475,7 +475,7 @@ export async function submitGuess(
   }
 
   const previous = {
-    answerText: displayAnswerText,
+    answerTexts: displayAnswerTexts,
     correct,
   };
 

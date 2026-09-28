@@ -30,7 +30,7 @@ type SkipResponseData = Pick<SessionPageData, "currentQuestion" | "session">;
 
 type GuessResponseData = {
   previous: {
-    answerText: string;
+    answerTexts: string[];
     correct: boolean;
   };
   currentQuestion: SessionPageData["currentQuestion"];
@@ -42,7 +42,7 @@ type PreviousSubmission =
       status: "result";
       questionText: string;
       guessText: string;
-      answerText: string;
+      answerTexts: string[];
       correct: boolean;
     }
   | { status: "error"; message: string };
@@ -208,8 +208,12 @@ function getGuessResponseData(body: unknown): GuessResponseData | null {
     !("previous" in body) ||
     typeof body.previous !== "object" ||
     body.previous === null ||
-    !("answerText" in body.previous) ||
-    typeof body.previous.answerText !== "string" ||
+    !("answerTexts" in body.previous) ||
+    !Array.isArray(body.previous.answerTexts) ||
+    body.previous.answerTexts.length === 0 ||
+    !body.previous.answerTexts.every(
+      (answerText) => typeof answerText === "string",
+    ) ||
     !("correct" in body.previous) ||
     typeof body.previous.correct !== "boolean"
   ) {
@@ -221,7 +225,7 @@ function getGuessResponseData(body: unknown): GuessResponseData | null {
   return questionAndSession
     ? {
         previous: {
-          answerText: body.previous.answerText,
+          answerTexts: body.previous.answerTexts,
           correct: body.previous.correct,
         },
         ...questionAndSession,
@@ -533,7 +537,7 @@ export function SessionQuestionPage({ sessionId }: SessionQuestionPageProps) {
         status: "result",
         questionText: submittedQuestionText,
         guessText: submittedGuess,
-        answerText: guessResponseData.previous.answerText,
+        answerTexts: guessResponseData.previous.answerTexts,
         correct: guessResponseData.previous.correct,
       });
       if (!hasRoundTransitionStarted) {
@@ -687,7 +691,13 @@ export function SessionQuestionPage({ sessionId }: SessionQuestionPageProps) {
               </div>
               <div>
                 <dt>Correct Answer</dt>
-                <dd>{previousSubmission.answerText}</dd>
+                <dd>
+                  <ul className={styles.answerList}>
+                    {previousSubmission.answerTexts.map((answerText, index) => (
+                      <li key={`${index}-${answerText}`}>{answerText}</li>
+                    ))}
+                  </ul>
+                </dd>
               </div>
               <div
                 className={
