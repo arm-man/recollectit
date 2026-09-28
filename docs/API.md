@@ -516,7 +516,7 @@ Success response when the Guess completes the Session — `200 OK`:
 
 The Resonse questionId shall be different from the Request questionId, if possible. The only time it is not possible is if there is only one questionId in the Session that has not been completed.
 
-`previous.answerTexts` contains the Primary Answer when the Guess is correct and all available Answers when it is incorrect. Answers retain Primary-then-Alternate order and use their preferred display forms. Supported Answer tokens are replaced with their preferred values before the response is created.
+`previous.answerTexts` contains the Primary Answer when the Guess is correct and the non-overlapping available Answers when it is incorrect. Answers use their preferred display forms and Primary-then-Alternate priority. A lower-priority Answer is omitted when either normalized Answer contains the other. Supported Answer tokens are replaced with their preferred values before the response is created.
 
 Expected errors:
 

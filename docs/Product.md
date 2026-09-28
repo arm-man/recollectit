@@ -168,6 +168,7 @@ Primary product success measure: students study regularly.
     - Whether the Guess was correct or incorrect
     - Show three panes in this order: **Question**, **Correct Answer**, and **Your Guess**.
     - In the **Correct Answer** pane, show each displayed Answer on its own line.
+    - If one normalized Answer contains another, display only the higher-priority Answer: Primary Answer, first Alternate Answer, then second Alternate Answer.
     - The section is a top-level pane displayed between the Session summary and the current Q&A pane.
 
 - Pressing Enter functions the same as clicking **Submit** when the Guess input has focus.

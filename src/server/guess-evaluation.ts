@@ -28,6 +28,29 @@ export function normalizeGuessValue(value: string): string {
     .replace(/[\p{M}\p{White_Space}\p{P}\p{S}]/gu, "");
 }
 
+export function selectAnswerTextsForDisplay(
+  answerTexts: readonly string[],
+): string[] {
+  const selectedAnswers: { text: string; normalizedText: string }[] = [];
+
+  for (const answerText of answerTexts) {
+    const normalizedText = normalizeGuessValue(answerText);
+    const overlapsHigherPriorityAnswer = selectedAnswers.some(
+      (selectedAnswer) =>
+        normalizedText.length > 0 &&
+        selectedAnswer.normalizedText.length > 0 &&
+        (normalizedText.includes(selectedAnswer.normalizedText) ||
+          selectedAnswer.normalizedText.includes(normalizedText)),
+    );
+
+    if (!overlapsHigherPriorityAnswer) {
+      selectedAnswers.push({ text: answerText, normalizedText });
+    }
+  }
+
+  return selectedAnswers.map((answer) => answer.text);
+}
+
 export function getDamerauLevenshteinDistance(
   sourceValue: string,
   targetValue: string,

@@ -14,7 +14,10 @@ import {
   markSessionCompleted,
   recordGuess,
 } from "@/server/session-db";
-import { isGuessCorrect } from "@/server/guess-evaluation";
+import {
+  isGuessCorrect,
+  selectAnswerTextsForDisplay,
+} from "@/server/guess-evaluation";
 import { logError } from "@/server/logs";
 
 export type AccuracyOperator = "lte" | "gte";
@@ -437,10 +440,12 @@ export async function submitGuess(
     answers,
     (message) => tokenErrors.add(message),
   );
-  const displayAnswerTexts = (correct ? answers.slice(0, 1) : answers).map(
-    (answer) =>
-      formatAnswerForDisplay(answer, (message) => tokenErrors.add(message)),
+  const formattedAnswerTexts = answers.map((answer) =>
+    formatAnswerForDisplay(answer, (message) => tokenErrors.add(message)),
   );
+  const displayAnswerTexts = correct
+    ? formattedAnswerTexts.slice(0, 1)
+    : selectAnswerTextsForDisplay(formattedAnswerTexts);
 
   await logAnswerTokenErrors(
     `Answer token processing failed for Session ${sessionId}, Question ${questionId}`,

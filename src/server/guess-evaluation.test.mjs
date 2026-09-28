@@ -1,7 +1,24 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { isGuessCorrect } from "./guess-evaluation.ts";
+import {
+  isGuessCorrect,
+  selectAnswerTextsForDisplay,
+} from "./guess-evaluation.ts";
+
+test("prioritizes the Primary Answer when display Answers overlap", () => {
+  assert.deepEqual(selectAnswerTextsForDisplay(["Le cle", "cle"]), [
+    "Le cle",
+  ]);
+  assert.deepEqual(selectAnswerTextsForDisplay(["cle", "Le cle"]), ["cle"]);
+});
+
+test("keeps non-overlapping display Answers in priority order", () => {
+  assert.deepEqual(
+    selectAnswerTextsForDisplay(["Le cle", "cle", "key"]),
+    ["Le cle", "key"],
+  );
+});
 
 test("accepts a Guess matching the Primary Answer", () => {
   assert.equal(isGuessCorrect("Paris", ["Paris", "City of Light"]), true);
