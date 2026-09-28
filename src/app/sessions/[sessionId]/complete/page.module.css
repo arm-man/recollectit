@@ -174,15 +174,11 @@
 }
 
 .questionResults th:nth-child(3),
-.questionResults td:nth-child(3) {
-  width: 110px;
-  text-align: right;
-  white-space: nowrap;
-}
-
+.questionResults td:nth-child(3),
 .questionResults th:last-child,
 .questionResults td:last-child {
-  width: 170px;
+  width: 1%;
+  padding-inline: 10px;
   text-align: right;
   white-space: nowrap;
 }
