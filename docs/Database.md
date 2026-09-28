@@ -95,7 +95,7 @@ Constraints:
 
 ### `questions`
 
-Stores Questions and their Primary and optional Alternate Answers.
+Stores exactly three possible Answers for each Question: one required Primary Answer and two optional Alternate Answers.
 
 | Column | Type | Null | Purpose |
 | --- | --- | --- | --- |
@@ -105,6 +105,7 @@ Stores Questions and their Primary and optional Alternate Answers.
 | `question_text` | `text` | No | Prompt shown to the Student. |
 | `answer_text` | `text` | No | Primary Answer used for Guess evaluation and displayed to the Student. |
 | `alternate_answer_text` | `text` | Yes | Optional Alternate Answer used only for Guess evaluation. |
+| `alternate_answer_text_2` | `text` | Yes | Second optional Alternate Answer used only for Guess evaluation. |
 
 Constraints:
 
@@ -112,11 +113,11 @@ Constraints:
 - Foreign key from `subject_id` to `subjects(id)`.
 - Composite foreign key from `(subject_id, category_id)` to `categories(subject_id, id)`. This ensures that a Question's Category belongs to the same Subject as the Question.
 - Checks that `question_text` and `answer_text` are not empty after trimming.
-- Check that `alternate_answer_text` is NULL or is not empty after trimming.
+- Check that `alternate_answer_text` and `alternate_answer_text_2` are each NULL or not empty after trimming.
 
 The `categories` table therefore needs a supporting unique constraint on `(subject_id, id)` even though `id` is already its primary key.
 
-Both Answers remain on the Question row because the product permits at most two Answers with fixed, different roles. A separate answers table would add indirection without supporting a current requirement.
+All three possible Answers remain on the Question row because the product permits one required Primary Answer and two optional Alternate Answers. A separate answers table would add indirection without supporting a current requirement.
 
 Normalized or token-expanded Answer values are not stored. Token expansion, Guess normalization, preferred display formatting, and the independent Damerau-Levenshtein comparisons against each available Answer occur in TypeScript as defined by `Product.md` and `Architecture.md`.
 
@@ -266,7 +267,7 @@ Use one transaction to:
 3. If all Session Questions are complete, set `sessions.completed_at` if it is still `NULL`.
 4. Commit.
 
-Guess evaluation occurs before the transaction begins. The Primary and optional Alternate Answers may be read as part of the validation query. The transaction coordinates only the database changes resulting from the Guess.
+Guess evaluation occurs before the transaction begins. `answer_text`, `alternate_answer_text`, and `alternate_answer_text_2` may be read as part of the validation query. The transaction coordinates only the database changes resulting from the Guess.
 
 ### Skip Question
 
@@ -353,4 +354,4 @@ Before the initial release, verify at least the following against the developmen
 6. Complete the final Question and confirm the Session and completion timestamp update atomically.
 7. Confirm a skipped Question does not change session_questions.attempts and the Question remains pending.
 8. Confirm database constraints reject invalid foreign keys.
-9. Confirm the database accepts a NULL or non-empty Alternate Answer and rejects an empty Alternate Answer.
+9. Confirm the database accepts NULL or non-empty values for `alternate_answer_text` and `alternate_answer_text_2`, and rejects empty values for either column.

@@ -14,7 +14,7 @@ Primary product success measure: students study regularly.
 - **Username**: the name used to access a student's data.
 - **Question**: a prompt presented to the Student.
 - **Primary Answer**: the required correct Answer used for Guess evaluation and displayed to the Student.
-- **Alternate Answer**: an optional additional correct Answer used only for Guess evaluation and never displayed to the Student.
+- **Alternate Answer**: any optional additional correct Answer used only for Guess evaluation and never displayed to the Student.
 - **Guess**: the Student's submitted answer to a Question.
 - **Attempt**: one submitted Guess for a Question. Attempts are counted, but individual Guesses and Attempt details are not retained.
 - **Subject**: a topic containing Questions, e.g. `World Capitals`.
@@ -46,8 +46,8 @@ Primary product success measure: students study regularly.
 - Every Question belongs to only one Subject.
 - If a Subject has Categories, a Question from the Subject may belong to one Category or remain uncategorized.
 - If a Subject has no Categories, all Questions from the Subject will be uncategorized.
-- Every Question has exactly one Primary Answer and may have one Alternate Answer.
-- A Guess is correct when it matches either Answer according to the Guess Evaluation rules.
+- Every Question has exactly one Primary Answer and may have Alternate Answers.
+- A Guess is correct when it matches any available Answer according to the Guess Evaluation rules.
 - Only the Primary Answer is displayed to Students.
 - Answers may contain substitution tokens. The stored token is expanded for Guess evaluation and replaced with its preferred value before the Primary Answer is displayed; raw supported tokens are never shown to Students.
 - Subjects and Categories are global/shared. There is no such thing as private Subject/Questions for a specific Student.
@@ -73,7 +73,7 @@ Primary product success measure: students study regularly.
 - A Session ends when every Question in the Session has been answered correctly.
 - Once a Question is answered correctly, it is not asked again during that Session.
 - The set of Questions in a Session is determined when the Session starts and does not change afterward.
-- Assume that the Subject, Category, Question, Primary Answer, and Alternate Answer will not be edited or deleted while the Session is in progress, so any such interaction can be ignored.
+- Assume that the Subject, Category, Question, and Answers will not be edited or deleted while the Session is in progress, so any such interaction can be ignored.
   - Note that this assumption requires an operational promise from administrators, which has been deemed ok for the first release.
 
 ## Landing Page
@@ -204,9 +204,9 @@ Examples:
 - `New-York` -> `newyork`
 - `C’est combien?` -> `cestcombien`
 
-After normalization, compare the Guess independently with the Primary Answer and, when present, the Alternate Answer. Use Damerau-Levenshtein distance to determine whether each comparison is close enough to be considered correct. The Attempt is correct when either Answer matches.
+After normalization, compare the Guess independently with each available Answer. Use Damerau-Levenshtein distance to determine whether each comparison is close enough to be considered correct. The Attempt is correct when any Answer matches.
   - Use a distance of 0 for 1–4 characters, distance of 1 for 5–9 characters, distance of 2 for 10 or more characters.
-  - The number of characters is defined by the particular Answer being compared, not the Guess. The Primary and Alternate Answers may therefore use different distance thresholds.
+  - The number of characters is defined by the particular Answer being compared, not the Guess. Available Answers may therefore use different distance thresholds.
   - A Guess whose normalized value is empty is valid and will be automatically marked as incorrect.
 
 Before normalization, expand each `{3sg-<preferred value>}` token in each available Answer into separate Answer variants using `it`, `she`, and `he`. Evaluate every variant with the same normalization and Answer-specific distance rules above. Multiple tokens may appear anywhere in an Answer and produce every combination of supported substitutions. For display, replace each supported token with its preferred value after the hyphen. Unknown, malformed, or unsupported tokens remain literal and are logged without interrupting the Session.

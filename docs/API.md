@@ -482,7 +482,7 @@ Validation:
 - An empty Guess is valid and is evaluated as incorrect.
 - The Session must be active and belong to the current Student.
 
-The server reads the Primary Answer and optional Alternate Answer, evaluates the Guess independently against each available Answer in TypeScript, and then uses the transaction defined in `Database.md` to update durable state. Either Answer may make the Attempt correct.
+The server reads the available Answers, evaluates the Guess independently against each one in TypeScript, and then uses the transaction defined in `Database.md` to update durable state. Any available Answer may make the Attempt correct.
 
 Success response when the Session remains active — `200 OK`:
 
@@ -516,7 +516,7 @@ Success response when the Guess completes the Session — `200 OK`:
 
 The Resonse questionId shall be different from the Request questionId, if possible. The only time it is not possible is if there is only one questionId in the Session that has not been completed.
 
-`previous.answerText` always contains the Primary Answer in its preferred display form, including when the Guess matched the Alternate Answer. Supported Answer tokens are replaced with their preferred values before the response is created. The Alternate Answer is not returned to the browser.
+`previous.answerText` always contains the Primary Answer in its preferred display form, including when the Guess matched an Alternate Answer. Supported Answer tokens are replaced with their preferred values before the response is created. Alternate Answers are not returned to the browser.
 
 Expected errors:
 
@@ -602,7 +602,7 @@ Every Route Handler that uses PostgreSQL must use the Node.js runtime rather tha
 3. Preview Session filters, including a zero-Question result.
 4. Start a Session and confirm the API returns only the Session identifier, then get the Session and confirm it returns the details, initial Question, and Session state.
 5. Reject Session creation when there are no eligible Questions or five active Sessions.
-6. Submit incorrect and correct Guesses, including an empty Guess and Guesses matching Primary and Alternate Answers.
+6. Submit incorrect and correct Guesses, including an empty Guess and Guesses matching each available Answer.
 7. Confirm Guess responses return the previous answer result, next-Question, and Session state.
 8. Complete a Session and return `sessionCompleted: true`.
 9. Skip without incrementing Attempts or changing previous answer result.

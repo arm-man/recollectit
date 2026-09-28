@@ -120,6 +120,7 @@ type GuessQuestionRow = {
   question_completed_at: Date | null;
   answer_text: string | null;
   alternate_answer_text: string | null;
+  alternate_answer_text_2: string | null;
 };
 
 type UpdatedGuessRow = {
@@ -230,6 +231,7 @@ export type GuessQuestionRecord = {
   questionCompletedAt: Date | null;
   answerText: string | null;
   alternateAnswerText: string | null;
+  alternateAnswerText2: string | null;
 };
 
 export type RecordGuessDatabaseResult =
@@ -987,7 +989,8 @@ export async function getGuessQuestionRecord(
        session_questions.question_id,
        session_questions.completed_at AS question_completed_at,
        questions.answer_text,
-       questions.alternate_answer_text
+       questions.alternate_answer_text,
+       questions.alternate_answer_text_2
      FROM sessions
      JOIN subjects ON subjects.id = sessions.subject_id
      LEFT JOIN session_questions
@@ -1008,6 +1011,7 @@ export async function getGuessQuestionRecord(
         questionCompletedAt: row.question_completed_at,
         answerText: row.answer_text,
         alternateAnswerText: row.alternate_answer_text,
+        alternateAnswerText2: row.alternate_answer_text_2,
       }
     : null;
 }

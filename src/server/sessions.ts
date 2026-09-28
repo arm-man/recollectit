@@ -427,10 +427,14 @@ export async function submitGuess(
   }
 
   const tokenErrors = new Set<string>();
-  const correct = isGuessCorrect(
-    guess,
+  const answers = [
     questionRecord.answerText,
     questionRecord.alternateAnswerText,
+    questionRecord.alternateAnswerText2,
+  ].filter((answer): answer is string => answer !== null);
+  const correct = isGuessCorrect(
+    guess,
+    answers,
     (message) => tokenErrors.add(message),
   );
   const displayAnswerText = formatAnswerForDisplay(

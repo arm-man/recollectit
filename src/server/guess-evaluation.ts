@@ -87,8 +87,7 @@ export function getDamerauLevenshteinDistance(
 
 export function isGuessCorrect(
   guess: string,
-  primaryAnswer: string,
-  alternateAnswer: string | null = null,
+  answers: readonly string[],
   reportTokenError?: AnswerTokenErrorReporter,
 ): boolean {
   const normalizedGuess = normalizeGuessValue(guess);
@@ -97,10 +96,6 @@ export function isGuessCorrect(
     return false;
   }
 
-  const answers =
-    alternateAnswer === null
-      ? [primaryAnswer]
-      : [primaryAnswer, alternateAnswer];
   const expandedAnswers = answers.flatMap((answer) =>
     expandAnswerTokens(answer, reportTokenError),
   );
