@@ -220,7 +220,7 @@ export default async function SessionCompletePage({
                     <th scope="col">Question</th>
                     <th scope="col">Answer</th>
                     <th scope="col">Attempts</th>
-                    <th scope="col">Question Accuracy</th>
+                    <th scope="col">Accuracy</th>
                   </tr>
                 </thead>
                 <tbody>
