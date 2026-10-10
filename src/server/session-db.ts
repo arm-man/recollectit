@@ -454,6 +454,7 @@ export async function countEligibleQuestions(
      LEFT JOIN student_question_history
        ON student_question_history.question_id = questions.id
      WHERE questions.subject_id = $2
+       AND questions.is_active = true
        AND (
          $3::boolean
          OR (
@@ -523,6 +524,7 @@ export async function createSessionWithQuestions(
        LEFT JOIN student_question_history
          ON student_question_history.question_id = questions.id
        WHERE questions.subject_id = $2
+         AND questions.is_active = true
          AND (
            $3::boolean
            OR (

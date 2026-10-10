@@ -50,9 +50,10 @@ Primary product success measure: students study regularly.
 - A Guess is correct when it matches any available Answer according to the Guess Evaluation rules.
 - The Primary Answer is displayed after every Guess. Alternate Answers are also displayed after an incorrect Guess.
 - Answers may contain substitution tokens. The stored token is expanded for Guess evaluation and replaced with its preferred value before an Answer is displayed; raw supported tokens are never shown to Students.
+- Each Question is globally active or inactive. Inactive Questions remain stored but are excluded when selecting Questions for new Sessions. Changing a Question's activation does not alter existing Sessions that already include it.
 - Subjects and Categories are global/shared. There is no such thing as private Subject/Questions for a specific Student.
 - Creating or editing Subjects, Questions, Answers, etc. will not be available to Students. #FutureRelease
-- In the initial release, only the Administrator can create, edit, or delete Subjects, Categories, Questions, and Answers. Administrative functionality is not available through the Student interface.
+- In the initial release, only the Administrator can create, edit, or delete Subjects, Categories, Questions, and Answers, and only the Administrator can activate or deactivate Questions. Question activation is managed directly through SQL; administrative functionality is not available through the Student interface.
 
 - Example 1:
   - Subject: `World Capitals`
@@ -136,6 +137,7 @@ Primary product success measure: students study regularly.
 - If a Student has never Attempted the Question before, that Question's Accuracy = 0%.
 - Note that `Question Accuracy >= 0%` and `Question Accuracy <= 100%` are logically equivalent to asking all Questions.
 - Category and Accuracy filters may be used together, and when they are used together, the filters use AND logic, e.g. `Category IN (North America, South America) AND Accuracy <= 50%`.
+- Only active Questions are eligible for a new Session, including when **Ask All Questions** is selected. The displayed Question count includes only active Questions.
 - A Session cannot be started if the selected options produce zero eligible Questions; an explanatory error is shown.
 
 ## Session

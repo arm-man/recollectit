@@ -106,6 +106,7 @@ Stores exactly three possible Answers for each Question: one required Primary An
 | `answer_text` | `text` | No | Primary Answer used for Guess evaluation and displayed to the Student. |
 | `alternate_answer_text` | `text` | Yes | Optional Alternate Answer used for Guess evaluation and incorrect-Guess feedback. |
 | `alternate_answer_text_2` | `text` | Yes | Second optional Alternate Answer used for Guess evaluation and incorrect-Guess feedback. |
+| `is_active` | `boolean` | No | Whether the Question is eligible for selection into a new Session. Use `DEFAULT true`. |
 
 Constraints:
 
@@ -120,6 +121,8 @@ The `categories` table therefore needs a supporting unique constraint on `(subje
 All three possible Answers remain on the Question row because the product permits one required Primary Answer and two optional Alternate Answers. A separate answers table would add indirection without supporting a current requirement.
 
 Normalized or token-expanded Answer values are not stored. Token expansion, Guess normalization, preferred display formatting, and the independent Damerau-Levenshtein comparisons against each available Answer occur in TypeScript as defined by `Product.md` and `Architecture.md`.
+
+`is_active` is a global Question flag managed directly through SQL. Inactive Questions remain in the database and are excluded only when selecting Questions for a new Session, including preview counts. Existing `session_questions` membership is fixed and remains usable if a Question is later deactivated; retrieval, Guess evaluation, skipping, progress, and completion for those Sessions do not filter on `questions.is_active`.
 
 ### `sessions`
 
@@ -190,6 +193,8 @@ Any time `attempts` is zero, a divide by zero would occur, so instead Accuracy s
 When filtering many Questions for Session creation, aggregate Attempts once for the Student and left join the result to eligible Questions. Do not execute one Accuracy query per Question.
 
 Do not store an Accuracy percentage column initially. Stored totals would duplicate the authoritative attempt counts in session_questions and require additional update logic.
+
+Question eligibility and preview-count queries for new Sessions must require `questions.is_active = true` before applying the existing Subject, Category, and Accuracy filters.
 
 When selecting a current Question for the Session page, calculate the Student's Question Accuracy across all of that Student's Sessions, including the current Session. Return the percentage rounded to the nearest integer only when Correct Attempts is greater than zero; otherwise return NULL so the Session page can omit it. Include this calculation in the existing current-Question selection queries rather than executing a separate query. This does not change the Session Complete table's session-only Question Accuracy calculation.
 
@@ -318,6 +323,8 @@ The initial schema is located in:
 ```text
 database/001_migration_initial.sql
 ```
+
+Question activation is added by `database/018_migration_add_is_active_column.sql`. The migration uses a non-null `is_active` column with a default of `true`, so existing and newly inserted Questions remain active unless an Administrator deactivates them through SQL.
 
 The migration creates tables in dependency order:
 
