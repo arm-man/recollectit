@@ -411,7 +411,7 @@ Do not create a custom error-handling framework unless one becomes useful.
 
 Write server-side errors and operational warnings to the PostgreSQL `logs` table. Errors use the default `error` severity; warnings use severity `warning`. Log messages must not contain credentials, connection strings, or other secrets.
 
-After each successful application insert into `logs`, send a plain-text email through Resend. The email body is the exact stored log message. Email delivery is best-effort: a send failure is written to the server console and must not roll back the log insert or fail the user-facing operation. Keep this behavior in the centralized logging flow so callers do not implement email delivery separately.
+After each successful application insert into `logs`, send a plain-text email through Resend, except when Student ID `1` completes a Session. That completion message remains in the `logs` table but does not send an email. The email body is the exact stored log message. Email delivery is best-effort: a send failure is written to the server console and must not roll back the log insert or fail the user-facing operation. Keep this behavior in the centralized logging flow so callers do not implement email delivery separately.
 
 Use Vercel Web Analytics for privacy-friendly aggregate website traffic analytics. Integrate it through the root application layout using the `@vercel/analytics` package; it does not require application environment variables.
 

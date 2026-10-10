@@ -3,9 +3,14 @@ import "server-only";
 import { pool } from "@/server/db";
 import { sendLogEmail } from "@/server/log-email";
 
+type LogOptions = {
+  sendEmail?: boolean;
+};
+
 async function insertLog(
   severity: "error" | "info",
   message: string,
+  options: LogOptions = {},
 ): Promise<void> {
   await pool.query(
     `INSERT INTO logs (severity, message)
@@ -13,11 +18,16 @@ async function insertLog(
     [severity, message],
   );
 
-  await sendLogEmail(message);
+  if (options.sendEmail !== false) {
+    await sendLogEmail(message);
+  }
 }
 
-export async function logInfo(message: string): Promise<void> {
-  await insertLog("info", message);
+export async function logInfo(
+  message: string,
+  options?: LogOptions,
+): Promise<void> {
+  await insertLog("info", message, options);
 }
 
 export async function logError(message: string): Promise<void> {

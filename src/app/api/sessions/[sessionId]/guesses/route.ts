@@ -21,6 +21,7 @@ type RouteContext = {
 };
 
 const POSITIVE_INTEGER_PATTERN = /^[1-9]\d*$/;
+const SESSION_COMPLETION_EMAIL_EXEMPT_STUDENT_ID = 1;
 
 function errorResponse(code: ApiErrorCode, message: string, status: number) {
   return Response.json({ error: { code, message } }, { status });
@@ -180,6 +181,10 @@ export async function POST(
       if (result.completedByThisGuess) {
         await logInfo(
           `Student "${student.username}" completed Session ${sessionId} for Subject "${result.subjectTitle}".`,
+          {
+            sendEmail:
+              student.id !== SESSION_COMPLETION_EMAIL_EXEMPT_STUDENT_ID,
+          },
         );
       }
 
