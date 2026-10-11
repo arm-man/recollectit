@@ -20,6 +20,7 @@ import {
   isGuessCorrect,
 } from "@/server/guess-evaluation";
 import { logError } from "@/server/logs";
+import { getMemoryTipForFeedback } from "@/server/memory-tip";
 
 export type AccuracyOperator = "lte" | "gte";
 
@@ -103,6 +104,7 @@ export type SubmitGuessResult =
       previous: {
         answerTexts: string[];
         correct: boolean;
+        memoryTip: string | null;
       };
       currentQuestion: {
         questionId: number;
@@ -482,6 +484,7 @@ export async function submitGuess(
   const previous = {
     answerTexts: displayAnswerTexts,
     correct,
+    memoryTip: getMemoryTipForFeedback(questionRecord.tipText, correct),
   };
 
   return {

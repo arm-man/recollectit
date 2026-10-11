@@ -120,6 +120,7 @@ type GuessQuestionRow = {
   question_completed_at: Date | null;
   answer_text: string | null;
   alternate_answer_text: string | null;
+  tip_text: string | null;
   additional_answer_texts: string[];
 };
 
@@ -231,6 +232,7 @@ export type GuessQuestionRecord = {
   questionCompletedAt: Date | null;
   answerText: string | null;
   alternateAnswerText: string | null;
+  tipText: string | null;
   additionalAnswerTexts: string[];
 };
 
@@ -992,6 +994,7 @@ export async function getGuessQuestionRecord(
        session_questions.completed_at AS question_completed_at,
        questions.answer_text,
        questions.alternate_answer_text,
+       questions.tip_text,
        COALESCE(
          ARRAY(
            SELECT alternate_answers.answer_text
@@ -1021,6 +1024,7 @@ export async function getGuessQuestionRecord(
         questionCompletedAt: row.question_completed_at,
         answerText: row.answer_text,
         alternateAnswerText: row.alternate_answer_text,
+        tipText: row.tip_text,
         additionalAnswerTexts: row.additional_answer_texts,
       }
     : null;

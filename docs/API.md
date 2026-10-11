@@ -482,7 +482,7 @@ Validation:
 - An empty Guess is valid and is evaluated as incorrect.
 - The Session must be active and belong to the current Student.
 
-The server reads the Primary Answer, optional first Alternate Answer, and all additional Answers in one database query. It evaluates the Guess independently against each one in TypeScript, then uses the transaction defined in `Database.md` to update durable state. Any available Answer may make the Attempt correct.
+The server reads the Primary Answer, optional first Alternate Answer, all additional Answers, and the optional Memory Tip in one database query. It evaluates the Guess independently against each Answer in TypeScript, then uses the transaction defined in `Database.md` to update durable state. Any available Answer may make the Attempt correct.
 
 Success response when the Session remains active — `200 OK`:
 
@@ -491,7 +491,8 @@ Success response when the Session remains active — `200 OK`:
   "sessionCompleted": false,
   "previous": {
     "answerTexts": ["Paris"],
-    "correct": true
+    "correct": true,
+    "memoryTip": null
   },
   "currentQuestion": {
     "questionId": 102,
@@ -517,6 +518,8 @@ Success response when the Guess completes the Session — `200 OK`:
 The Resonse questionId shall be different from the Request questionId, if possible. The only time it is not possible is if there is only one questionId in the Session that has not been completed.
 
 `previous.answerTexts` contains only the Primary Answer when the Guess is correct. When the Guess is incorrect, it contains every non-overlapping available Answer without truncation: the Primary Answer, the first Alternate Answer when present, then every additional Answer in stored order. A lower-priority Answer is omitted when either normalized Answer contains the other. Supported Answer tokens are replaced with their preferred values before the response is created.
+
+`previous.memoryTip` is the submitted Question's plain-text Memory Tip when the Guess is incorrect and `questions.tip_text` is nonempty after trimming. It is `null` for every correct Guess and for an incorrect Guess without a nonempty tip. It belongs to the most recently submitted Question, not `currentQuestion`.
 
 Expected errors:
 

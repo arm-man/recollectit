@@ -32,6 +32,7 @@ type GuessResponseData = {
   previous: {
     answerTexts: string[];
     correct: boolean;
+    memoryTip: string | null;
   };
   currentQuestion: SessionPageData["currentQuestion"];
   session: SessionPageData["session"];
@@ -44,6 +45,7 @@ type PreviousSubmission =
       guessText: string;
       answerTexts: string[];
       correct: boolean;
+      memoryTip: string | null;
     }
   | { status: "error"; message: string };
 
@@ -215,7 +217,10 @@ function getGuessResponseData(body: unknown): GuessResponseData | null {
       (answerText) => typeof answerText === "string",
     ) ||
     !("correct" in body.previous) ||
-    typeof body.previous.correct !== "boolean"
+    typeof body.previous.correct !== "boolean" ||
+    !("memoryTip" in body.previous) ||
+    (body.previous.memoryTip !== null &&
+      typeof body.previous.memoryTip !== "string")
   ) {
     return null;
   }
@@ -227,6 +232,11 @@ function getGuessResponseData(body: unknown): GuessResponseData | null {
         previous: {
           answerTexts: body.previous.answerTexts,
           correct: body.previous.correct,
+          memoryTip:
+            body.previous.memoryTip === null ||
+            body.previous.memoryTip.trim() === ""
+              ? null
+              : body.previous.memoryTip,
         },
         ...questionAndSession,
       }
@@ -539,6 +549,7 @@ export function SessionQuestionPage({ sessionId }: SessionQuestionPageProps) {
         guessText: submittedGuess,
         answerTexts: guessResponseData.previous.answerTexts,
         correct: guessResponseData.previous.correct,
+        memoryTip: guessResponseData.previous.memoryTip,
       });
       if (!hasRoundTransitionStarted) {
         guessInputRef.current?.focus();
@@ -684,40 +695,74 @@ export function SessionQuestionPage({ sessionId }: SessionQuestionPageProps) {
           {previousSubmission.status === "error" ? (
             <p className={styles.previousError}>{previousSubmission.message}</p>
           ) : (
-            <dl className={styles.previousDetails}>
-              <div>
-                <dt>Question</dt>
-                <dd>{previousSubmission.questionText}</dd>
-              </div>
-              <div>
-                <dt>Correct Answer</dt>
-                <dd>
-                  <ul className={styles.answerList}>
-                    {previousSubmission.answerTexts.map((answerText, index) => (
-                      <li key={`${index}-${answerText}`}>{answerText}</li>
-                    ))}
-                  </ul>
-                </dd>
-              </div>
-              <div
-                className={
-                  previousSubmission.correct
-                    ? styles.correctStatus
-                    : styles.incorrectStatus
-                }
-              >
-                <dt>Your Guess</dt>
-                <dd className={styles.guessText}>
-                  <span className={styles.visuallyHidden}>
-                    {previousSubmission.correct ? "Correct: " : "Incorrect: "}
-                  </span>
-                  <span className={styles.guessResultIcon} aria-hidden="true">
-                    {previousSubmission.correct ? "✓" : "✕"}
-                  </span>
-                  <span>{previousSubmission.guessText || "(empty)"}</span>
-                </dd>
-              </div>
-            </dl>
+            <>
+              <dl className={styles.previousDetails}>
+                <div>
+                  <dt>Question</dt>
+                  <dd>{previousSubmission.questionText}</dd>
+                </div>
+                <div>
+                  <dt>Correct Answer</dt>
+                  <dd>
+                    <ul className={styles.answerList}>
+                      {previousSubmission.answerTexts.map(
+                        (answerText, index) => (
+                          <li key={`${index}-${answerText}`}>{answerText}</li>
+                        ),
+                      )}
+                    </ul>
+                  </dd>
+                </div>
+                <div
+                  className={
+                    previousSubmission.correct
+                      ? styles.correctStatus
+                      : styles.incorrectStatus
+                  }
+                >
+                  <dt>Your Guess</dt>
+                  <dd className={styles.guessText}>
+                    <span className={styles.visuallyHidden}>
+                      {previousSubmission.correct
+                        ? "Correct: "
+                        : "Incorrect: "}
+                    </span>
+                    <span className={styles.guessResultIcon} aria-hidden="true">
+                      {previousSubmission.correct ? "✓" : "✕"}
+                    </span>
+                    <span>{previousSubmission.guessText || "(empty)"}</span>
+                  </dd>
+                </div>
+              </dl>
+              {!previousSubmission.correct &&
+              previousSubmission.memoryTip !== null ? (
+                <section
+                  className={styles.memoryTip}
+                  aria-labelledby="memory-tip-heading"
+                >
+                  <div className={styles.memoryTipHeading}>
+                    <svg
+                      className={styles.memoryTipIcon}
+                      viewBox="0 0 24 24"
+                      aria-hidden="true"
+                    >
+                      <path
+                        d="M9 21h6m-5-3h4m4-8a6 6 0 1 0-9.1 5.1c.7.4 1.1 1.1 1.1 1.9h4c0-.8.4-1.5 1.1-1.9A6 6 0 0 0 18 10Z"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="1.8"
+                      />
+                    </svg>
+                    <h3 id="memory-tip-heading">Memory tip</h3>
+                  </div>
+                  <p className={styles.memoryTipText}>
+                    {previousSubmission.memoryTip}
+                  </p>
+                </section>
+              ) : null}
+            </>
           )}
         </section>
       ) : null}

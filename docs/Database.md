@@ -96,7 +96,7 @@ Constraints:
 
 ### `questions`
 
-Stores each Question, its required Primary Answer, and its optional first Alternate Answer.
+Stores each Question, its required Primary Answer, its optional first Alternate Answer, and its optional Memory Tip.
 
 | Column | Type | Null | Purpose |
 | --- | --- | --- | --- |
@@ -106,6 +106,7 @@ Stores each Question, its required Primary Answer, and its optional first Altern
 | `question_text` | `text` | No | Prompt shown to the Student. |
 | `answer_text` | `text` | No | Primary Answer used for Guess evaluation and displayed to the Student. |
 | `alternate_answer_text` | `text` | Yes | Optional first Alternate Answer used for Guess evaluation and incorrect-Guess feedback. |
+| `tip_text` | `text` | Yes | Optional plain-text Memory Tip displayed only after an incorrect Guess. |
 | `is_active` | `boolean` | No | Whether the Question is eligible for selection into a new Session. Use `DEFAULT true`. |
 
 Constraints:
@@ -115,6 +116,7 @@ Constraints:
 - Composite foreign key from `(subject_id, category_id)` to `categories(subject_id, id)`. This ensures that a Question's Category belongs to the same Subject as the Question.
 - Checks that `question_text` and `answer_text` are not empty after trimming.
 - Check that `alternate_answer_text` is NULL or not empty after trimming.
+- Check that `tip_text` is NULL or not empty after trimming.
 
 The `categories` table therefore needs a supporting unique constraint on `(subject_id, id)` even though `id` is already its primary key.
 
@@ -245,6 +247,8 @@ The Session page's Category labels are derived from the distinct, non-null Categ
 
 The previous Q&A panel is browser-visit state and is intentionally hidden after the page is opened or resumed, so it does not require a durable database field.
 
+When a Guess is submitted, retrieve the submitted Question's `tip_text` with its Answers. Return the tip for previous-Q&A feedback only when the Guess is incorrect and the value is nonempty after trimming. Do not retrieve the next Question's tip for this purpose.
+
 A skipped Question remains pending because skipping writes no Attempt. The server can choose another pending Question for the response.
 
 ### Session Completion Summary
@@ -289,7 +293,7 @@ Use one transaction to:
 3. If all Session Questions are complete, set `sessions.completed_at` if it is still `NULL`.
 4. Commit.
 
-Guess evaluation occurs before the transaction begins. `questions.answer_text`, `questions.alternate_answer_text`, and every related `alternate_answers.answer_text` are read as part of one validation query. The transaction coordinates only the database changes resulting from the Guess.
+Guess evaluation occurs before the transaction begins. `questions.answer_text`, `questions.alternate_answer_text`, `questions.tip_text`, and every related `alternate_answers.answer_text` are read as part of one validation query. The transaction coordinates only the database changes resulting from the Guess.
 
 ### Skip Question
 
@@ -345,6 +349,8 @@ database/001_migration_initial.sql
 Question activation is added by `database/018_migration_add_is_active_column.sql`. The migration uses a non-null `is_active` column with a default of `true`, so existing and newly inserted Questions remain active unless an Administrator deactivates them through SQL.
 
 Additional Alternate Answers are added by `database/020_migration_alternate_answers_table.sql`. The migration removes the former second Alternate Answer column and stores additional Answers in `alternate_answers`.
+
+Optional Memory Tips are added by `database/023_migration_questions.sql` through the nullable `questions.tip_text` column.
 
 The migration creates tables in dependency order:
 
