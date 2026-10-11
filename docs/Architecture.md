@@ -351,7 +351,7 @@ Keep this logic independent enough to unit test directly.
 The same token processor must provide the preferred display form before a Primary Answer is returned to browser-facing code. Unknown or malformed tokens remain literal and are reported through the centralized server logging flow without failing the Session workflow.
 
 The normalized values do not need to be stored in the database unless a future requirement demonstrates a reason to do so.
-Alternate Answers remain server-only and are not included in browser-facing data. The API and server-rendered completion data expose only the Primary Answer.
+Answers remain server-only until the existing Guess-feedback workflow permits revealing them. Current-Question responses never expose Answers; after a Guess, the API returns only the Primary Answer for a correct Guess and every non-overlapping available Answer for an incorrect Guess. Server-rendered completion data exposes only the Primary Answer.
 
 ## Random Question Selection
 

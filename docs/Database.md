@@ -34,8 +34,9 @@ students 1 ---- * sessions * ---- 1 subjects
                   |
                   *
            session_questions * ---- 1 questions * ---- 1 subjects
-                                                     |
-                                                     0..1 categories
+                                      |              |
+                                      *              0..1 categories
+                              alternate_answers
 ```
 
 Important details:
@@ -95,7 +96,7 @@ Constraints:
 
 ### `questions`
 
-Stores exactly three possible Answers for each Question: one required Primary Answer and two optional Alternate Answers.
+Stores each Question, its required Primary Answer, and its optional first Alternate Answer.
 
 | Column | Type | Null | Purpose |
 | --- | --- | --- | --- |
@@ -104,8 +105,7 @@ Stores exactly three possible Answers for each Question: one required Primary An
 | `category_id` | `integer` | Yes | Optional Category. |
 | `question_text` | `text` | No | Prompt shown to the Student. |
 | `answer_text` | `text` | No | Primary Answer used for Guess evaluation and displayed to the Student. |
-| `alternate_answer_text` | `text` | Yes | Optional Alternate Answer used for Guess evaluation and incorrect-Guess feedback. |
-| `alternate_answer_text_2` | `text` | Yes | Second optional Alternate Answer used for Guess evaluation and incorrect-Guess feedback. |
+| `alternate_answer_text` | `text` | Yes | Optional first Alternate Answer used for Guess evaluation and incorrect-Guess feedback. |
 | `is_active` | `boolean` | No | Whether the Question is eligible for selection into a new Session. Use `DEFAULT true`. |
 
 Constraints:
@@ -114,15 +114,32 @@ Constraints:
 - Foreign key from `subject_id` to `subjects(id)`.
 - Composite foreign key from `(subject_id, category_id)` to `categories(subject_id, id)`. This ensures that a Question's Category belongs to the same Subject as the Question.
 - Checks that `question_text` and `answer_text` are not empty after trimming.
-- Check that `alternate_answer_text` and `alternate_answer_text_2` are each NULL or not empty after trimming.
+- Check that `alternate_answer_text` is NULL or not empty after trimming.
 
 The `categories` table therefore needs a supporting unique constraint on `(subject_id, id)` even though `id` is already its primary key.
-
-All three possible Answers remain on the Question row because the product permits one required Primary Answer and two optional Alternate Answers. A separate answers table would add indirection without supporting a current requirement.
 
 Normalized or token-expanded Answer values are not stored. Token expansion, Guess normalization, preferred display formatting, and the independent Damerau-Levenshtein comparisons against each available Answer occur in TypeScript as defined by `Product.md` and `Architecture.md`.
 
 `is_active` is a global Question flag managed directly through SQL. Inactive Questions remain in the database and are excluded only when selecting Questions for a new Session, including preview counts. Existing `session_questions` membership is fixed and remains usable if a Question is later deactivated; retrieval, Guess evaluation, skipping, progress, and completion for those Sessions do not filter on `questions.is_active`.
+
+### `alternate_answers`
+
+Stores zero or more additional Alternate Answers for each Question. Together, `questions.answer_text`, the optional `questions.alternate_answer_text`, and these rows form the complete ordered set of acceptable Answers.
+
+| Column | Type | Null | Purpose |
+| --- | --- | --- | --- |
+| `id` | `integer` identity | No | Primary key and display/evaluation order for additional Answers. |
+| `question_id` | `integer` | No | Question that accepts the Answer. |
+| `answer_text` | `text` | No | Additional Alternate Answer used for Guess evaluation and incorrect-Guess feedback. |
+
+Constraints:
+
+- Primary key on `id`.
+- Foreign key from `question_id` to `questions(id)` with `ON DELETE CASCADE`.
+- Check that `answer_text` is not empty after trimming.
+- Unique constraint on `(question_id, answer_text)`.
+
+There is no fixed limit on additional Answers. Retrieve them in `id` order after the Primary Answer and first Alternate Answer, and evaluate them with the same TypeScript normalization and token rules.
 
 ### `sessions`
 
@@ -272,7 +289,7 @@ Use one transaction to:
 3. If all Session Questions are complete, set `sessions.completed_at` if it is still `NULL`.
 4. Commit.
 
-Guess evaluation occurs before the transaction begins. `answer_text`, `alternate_answer_text`, and `alternate_answer_text_2` may be read as part of the validation query. The transaction coordinates only the database changes resulting from the Guess.
+Guess evaluation occurs before the transaction begins. `questions.answer_text`, `questions.alternate_answer_text`, and every related `alternate_answers.answer_text` are read as part of one validation query. The transaction coordinates only the database changes resulting from the Guess.
 
 ### Skip Question
 
@@ -312,6 +329,7 @@ Recommended foreign-key deletion behavior:
 - `students`: restrict deletion while Sessions exist.
 - `subjects`: restrict deletion while Categories, Questions, or Sessions exist.
 - `categories`: restrict deletion while Questions exist.
+- `alternate_answers`: cascade deletion when the owning Question is deleted.
 - `questions`: restrict deletion while `session_questions` rows exist.
 
 The application should not silently cascade deletion of historical learning data.
@@ -325,6 +343,8 @@ database/001_migration_initial.sql
 ```
 
 Question activation is added by `database/018_migration_add_is_active_column.sql`. The migration uses a non-null `is_active` column with a default of `true`, so existing and newly inserted Questions remain active unless an Administrator deactivates them through SQL.
+
+Additional Alternate Answers are added by `database/020_migration_alternate_answers_table.sql`. The migration removes the former second Alternate Answer column and stores additional Answers in `alternate_answers`.
 
 The migration creates tables in dependency order:
 
@@ -361,4 +381,5 @@ Before the initial release, verify at least the following against the developmen
 6. Complete the final Question and confirm the Session and completion timestamp update atomically.
 7. Confirm a skipped Question does not change session_questions.attempts and the Question remains pending.
 8. Confirm database constraints reject invalid foreign keys.
-9. Confirm the database accepts NULL or non-empty values for `alternate_answer_text` and `alternate_answer_text_2`, and rejects empty values for either column.
+9. Confirm the database accepts NULL or a non-empty value for `questions.alternate_answer_text`, and rejects an empty value.
+10. Confirm `alternate_answers` accepts multiple non-empty Answers for a Question, rejects empty and exact duplicate Answers for that Question, and deletes its rows when the Question is deleted.

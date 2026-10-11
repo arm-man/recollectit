@@ -15,8 +15,9 @@ import {
   recordGuess,
 } from "@/server/session-db";
 import {
+  getAcceptableAnswerTexts,
+  getAnswerTextsForFeedback,
   isGuessCorrect,
-  selectAnswerTextsForDisplay,
 } from "@/server/guess-evaluation";
 import { logError } from "@/server/logs";
 
@@ -430,22 +431,21 @@ export async function submitGuess(
   }
 
   const tokenErrors = new Set<string>();
-  const answers = [
+  const answers = getAcceptableAnswerTexts(
     questionRecord.answerText,
     questionRecord.alternateAnswerText,
-    questionRecord.alternateAnswerText2,
-  ].filter((answer): answer is string => answer !== null);
+    questionRecord.additionalAnswerTexts,
+  );
   const correct = isGuessCorrect(
     guess,
     answers,
     (message) => tokenErrors.add(message),
   );
-  const formattedAnswerTexts = answers.map((answer) =>
-    formatAnswerForDisplay(answer, (message) => tokenErrors.add(message)),
+  const displayAnswerTexts = getAnswerTextsForFeedback(
+    answers,
+    correct,
+    (message) => tokenErrors.add(message),
   );
-  const displayAnswerTexts = correct
-    ? formattedAnswerTexts.slice(0, 1)
-    : selectAnswerTextsForDisplay(formattedAnswerTexts);
 
   await logAnswerTokenErrors(
     `Answer token processing failed for Session ${sessionId}, Question ${questionId}`,

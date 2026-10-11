@@ -47,6 +47,7 @@ Primary product success measure: students study regularly.
 - If a Subject has Categories, a Question from the Subject may belong to one Category or remain uncategorized.
 - If a Subject has no Categories, all Questions from the Subject will be uncategorized.
 - Every Question has exactly one Primary Answer and may have Alternate Answers.
+- There is no fixed limit on the number of Alternate Answers.
 - A Guess is correct when it matches any available Answer according to the Guess Evaluation rules.
 - The Primary Answer is displayed after every Guess. Alternate Answers are also displayed after an incorrect Guess.
 - Answers may contain substitution tokens. The stored token is expanded for Guess evaluation and replaced with its preferred value before an Answer is displayed; raw supported tokens are never shown to Students.
@@ -170,7 +171,7 @@ Primary product success measure: students study regularly.
     - Whether the Guess was correct or incorrect
     - Show three panes in this order: **Question**, **Correct Answer**, and **Your Guess**.
     - In the **Correct Answer** pane, show each displayed Answer on its own line.
-    - If one normalized Answer contains another, display only the higher-priority Answer: Primary Answer, first Alternate Answer, then second Alternate Answer.
+    - If one normalized Answer contains another, display only the higher-priority Answer: Primary Answer, first Alternate Answer, then each additional Alternate Answer in its stored order.
     - The section is a top-level pane displayed between the Session summary and the current Q&A pane.
 
 - Pressing Enter functions the same as clicking **Submit** when the Guess input has focus.

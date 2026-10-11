@@ -1,5 +1,6 @@
 import {
   expandAnswerTokens,
+  formatAnswerForDisplay,
   type AnswerTokenErrorReporter,
 } from "./answer-tokens.ts";
 
@@ -49,6 +50,32 @@ export function selectAnswerTextsForDisplay(
   }
 
   return selectedAnswers.map((answer) => answer.text);
+}
+
+export function getAcceptableAnswerTexts(
+  answerText: string,
+  alternateAnswerText: string | null,
+  additionalAnswerTexts: readonly string[],
+): string[] {
+  return [
+    answerText,
+    ...(alternateAnswerText === null ? [] : [alternateAnswerText]),
+    ...additionalAnswerTexts,
+  ];
+}
+
+export function getAnswerTextsForFeedback(
+  answerTexts: readonly string[],
+  isCorrect: boolean,
+  reportTokenError?: AnswerTokenErrorReporter,
+): string[] {
+  const formattedAnswerTexts = answerTexts.map((answerText) =>
+    formatAnswerForDisplay(answerText, reportTokenError),
+  );
+
+  return isCorrect
+    ? formattedAnswerTexts.slice(0, 1)
+    : selectAnswerTextsForDisplay(formattedAnswerTexts);
 }
 
 export function getDamerauLevenshteinDistance(
