@@ -689,8 +689,9 @@ export function SessionQuestionPage({ sessionId }: SessionQuestionPageProps) {
             previousSubmission.status === "error" ? "assertive" : "polite"
           }
         >
-          <p className={styles.eyebrow}>Previous Q&amp;A</p>
-          <h2 id="previous-heading">Most recent submission</h2>
+          <h2 id="previous-heading" className={styles.eyebrow}>
+            Previous Q&amp;A
+          </h2>
 
           {previousSubmission.status === "error" ? (
             <p className={styles.previousError}>{previousSubmission.message}</p>
