@@ -127,13 +127,14 @@ test("supports token expansion and normalization in an additional Answer", () =>
   assert.equal(isGuessCorrect("HE HAS DEJA ARRIVED!!!", answers), true);
 });
 
-test("shows only the Primary Answer after a correct Guess", () => {
+test("shows every non-overlapping Answer after a correct Guess", () => {
   assert.deepEqual(
-    getAnswerTextsForFeedback(
-      ["Primary", "First alternate", "Additional one"],
-      true,
-    ),
-    ["Primary"],
+    getAnswerTextsForFeedback([
+      "Primary",
+      "First alternate",
+      "Additional one",
+    ]),
+    ["Primary", "First alternate", "Additional one"],
   );
 });
 
@@ -149,15 +150,16 @@ test("shows every non-overlapping Answer after an incorrect Guess", () => {
     "a short time later",
   ]);
 
-  assert.deepEqual(getAnswerTextsForFeedback(answers, false), answers);
+  assert.deepEqual(getAnswerTextsForFeedback(answers), answers);
 });
 
 test("formats tokens and removes normalized duplicates from feedback", () => {
   assert.deepEqual(
-    getAnswerTextsForFeedback(
-      ["{3sg-it} is ready", "IT IS READY!!!", "prepared"],
-      false,
-    ),
+    getAnswerTextsForFeedback([
+      "{3sg-it} is ready",
+      "IT IS READY!!!",
+      "prepared",
+    ]),
     ["it is ready", "prepared"],
   );
 });

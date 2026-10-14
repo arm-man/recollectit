@@ -14,8 +14,8 @@ Primary product success measure: students study regularly.
 - **Username**: the name used to access a student's data.
 - **Question**: a prompt presented to the Student.
 - **Primary Answer**: the required correct Answer used for Guess evaluation and displayed to the Student.
-- **Alternate Answer**: any optional additional correct Answer used for Guess evaluation and displayed after an incorrect Guess.
-- **Memory Tip**: optional plain text associated with a Question that reinforces learning after an incorrect Guess.
+- **Alternate Answer**: any optional additional correct Answer used for Guess evaluation and displayed after a Guess.
+- **Memory Tip**: optional plain text associated with a Question that reinforces learning after a Guess.
 - **Guess**: the Student's submitted answer to a Question.
 - **Attempt**: one submitted Guess for a Question. Attempts are counted, but individual Guesses and Attempt details are not retained.
 - **Subject**: a topic containing Questions, e.g. `World Capitals`.
@@ -51,7 +51,7 @@ Primary product success measure: students study regularly.
 - A Question may have one optional Memory Tip, such as an example sentence, mnemonic, fact, or explanation.
 - There is no fixed limit on the number of Alternate Answers.
 - A Guess is correct when it matches any available Answer according to the Guess Evaluation rules.
-- The Primary Answer is displayed after every Guess. Alternate Answers are also displayed after an incorrect Guess.
+- The Primary Answer and all Alternate Answers are displayed after every Guess.
 - Answers may contain substitution tokens. The stored token is expanded for Guess evaluation and replaced with its preferred value before an Answer is displayed; raw supported tokens are never shown to Students.
 - Each Question is globally active or inactive. Inactive Questions remain stored but are excluded when selecting Questions for new Sessions. Changing a Question's activation does not alter existing Sessions that already include it.
 - Subjects and Categories are global/shared. There is no such thing as private Subject/Questions for a specific Student.
@@ -168,13 +168,13 @@ Primary product success measure: students study regularly.
     - A **Submit** button
   - A section showing the previous Q&A:
     - The previous Question
-    - The Primary Answer and, when the Guess is incorrect, all Alternate Answers
+    - The Primary Answer and all Alternate Answers
     - The most recently submitted Guess
     - Whether the Guess was correct or incorrect
     - Show three panes in this order: **Question**, **Correct Answer**, and **Your Guess**.
     - In the **Correct Answer** pane, show each displayed Answer on its own line.
     - If one normalized Answer contains another, display only the higher-priority Answer: Primary Answer, first Alternate Answer, then each additional Alternate Answer in its stored order.
-    - When an incorrect Guess's Question has a nonempty Memory Tip, automatically show it in a separate full-width section beneath the three panes after the correct Answer is revealed.
+    - When the Question has a nonempty Memory Tip, automatically show it in a separate full-width section beneath the three panes after the correct Answer is revealed.
     - The section is a top-level pane displayed between the Session summary and the current Q&A pane.
 
 - Pressing Enter functions the same as clicking **Submit** when the Guess input has focus.
@@ -183,7 +183,7 @@ Primary product success measure: students study regularly.
 - The Guess form and input will provide advisory hints requesting that browsers, virtual keyboards, and common password managers disable autofill, autocorrection, spellcheck, and credential or personal-information suggestions. The browser and keyboard retain final control and may ignore these hints.
 - Only the **Your Guess** pane will use a light green or red background with a stronger status-colored border. Guess text remains dark, and an explicit correct or incorrect icon is displayed immediately before the Guess. The words **Correct** and **Incorrect** are not displayed visually, but the outcome remains available to assistive technology so it does not rely on color or the icon alone. The **Question** and **Correct Answer** panes remain visually neutral.
 - The previous Q&A section is hidden until the Student submits a Guess after opening or resuming the Session page.
-- Correct Guesses never display a Memory Tip or any tip-related interface. Incorrect Guesses without a Memory Tip likewise leave no empty container or reserved space.
+- Guesses for Questions without a Memory Tip leave no empty container or reserved space.
 - Memory Tips are plain text. Preserve intentional line breaks and wrap long text without horizontal scrolling.
 - **Skip for now** does not count as a Guess/Attempt and does not affect the previous Q&A section.
 - A skipped Question remains pending in the current Round, and a different pending Question is selected randomly. The skipped Question must be presented and Attempted later before the Round can end.

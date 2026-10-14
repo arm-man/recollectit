@@ -4,33 +4,25 @@ import test from "node:test";
 
 import { getMemoryTipForFeedback } from "./memory-tip.ts";
 
-test("returns a nonempty Memory Tip after an incorrect Guess", () => {
+test("returns a nonempty Memory Tip for feedback", () => {
   assert.equal(
-    getMemoryTipForFeedback("Connect the idea to something familiar.", false),
+    getMemoryTipForFeedback("Connect the idea to something familiar."),
     "Connect the idea to something familiar.",
   );
 });
 
-test("returns no Memory Tip after an incorrect Guess when the value is NULL", () => {
-  assert.equal(getMemoryTipForFeedback(null, false), null);
-});
-
-test("returns no Memory Tip after a correct Guess when a tip exists", () => {
-  assert.equal(getMemoryTipForFeedback("This must stay hidden.", true), null);
-});
-
-test("returns no Memory Tip after a correct Guess when the value is NULL", () => {
-  assert.equal(getMemoryTipForFeedback(null, true), null);
+test("returns no Memory Tip when the value is NULL", () => {
+  assert.equal(getMemoryTipForFeedback(null), null);
 });
 
 test("treats a whitespace-only Memory Tip as absent", () => {
-  assert.equal(getMemoryTipForFeedback(" \r\n\t ", false), null);
+  assert.equal(getMemoryTipForFeedback(" \r\n\t "), null);
 });
 
 test("preserves multiline and long Memory Tip text for display", () => {
   const tip = `First line\n${"unbroken".repeat(30)}`;
 
-  assert.equal(getMemoryTipForFeedback(tip, false), tip);
+  assert.equal(getMemoryTipForFeedback(tip), tip);
 
   const stylesheet = readFileSync(
     new URL("../app/sessions/[sessionId]/page.module.css", import.meta.url),

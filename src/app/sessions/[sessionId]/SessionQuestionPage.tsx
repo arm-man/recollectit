@@ -735,8 +735,7 @@ export function SessionQuestionPage({ sessionId }: SessionQuestionPageProps) {
                   </dd>
                 </div>
               </dl>
-              {!previousSubmission.correct &&
-              previousSubmission.memoryTip !== null ? (
+              {previousSubmission.memoryTip !== null ? (
                 <section
                   className={styles.memoryTip}
                   aria-labelledby="memory-tip-heading"

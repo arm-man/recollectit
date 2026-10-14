@@ -445,7 +445,6 @@ export async function submitGuess(
   );
   const displayAnswerTexts = getAnswerTextsForFeedback(
     answers,
-    correct,
     (message) => tokenErrors.add(message),
   );
 
@@ -484,7 +483,7 @@ export async function submitGuess(
   const previous = {
     answerTexts: displayAnswerTexts,
     correct,
-    memoryTip: getMemoryTipForFeedback(questionRecord.tipText, correct),
+    memoryTip: getMemoryTipForFeedback(questionRecord.tipText),
   };
 
   return {

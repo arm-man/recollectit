@@ -66,16 +66,13 @@ export function getAcceptableAnswerTexts(
 
 export function getAnswerTextsForFeedback(
   answerTexts: readonly string[],
-  isCorrect: boolean,
   reportTokenError?: AnswerTokenErrorReporter,
 ): string[] {
   const formattedAnswerTexts = answerTexts.map((answerText) =>
     formatAnswerForDisplay(answerText, reportTokenError),
   );
 
-  return isCorrect
-    ? formattedAnswerTexts.slice(0, 1)
-    : selectAnswerTextsForDisplay(formattedAnswerTexts);
+  return selectAnswerTextsForDisplay(formattedAnswerTexts);
 }
 
 export function getDamerauLevenshteinDistance(

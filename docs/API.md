@@ -517,9 +517,9 @@ Success response when the Guess completes the Session — `200 OK`:
 
 The Resonse questionId shall be different from the Request questionId, if possible. The only time it is not possible is if there is only one questionId in the Session that has not been completed.
 
-`previous.answerTexts` contains only the Primary Answer when the Guess is correct. When the Guess is incorrect, it contains every non-overlapping available Answer without truncation: the Primary Answer, the first Alternate Answer when present, then every additional Answer in stored order. A lower-priority Answer is omitted when either normalized Answer contains the other. Supported Answer tokens are replaced with their preferred values before the response is created.
+`previous.answerTexts` contains every non-overlapping available Answer without truncation after every Guess: the Primary Answer, the first Alternate Answer when present, then every additional Answer in stored order. A lower-priority Answer is omitted when either normalized Answer contains the other. Supported Answer tokens are replaced with their preferred values before the response is created.
 
-`previous.memoryTip` is the submitted Question's plain-text Memory Tip when the Guess is incorrect and `questions.tip_text` is nonempty after trimming. It is `null` for every correct Guess and for an incorrect Guess without a nonempty tip. It belongs to the most recently submitted Question, not `currentQuestion`.
+`previous.memoryTip` is the submitted Question's plain-text Memory Tip when `questions.tip_text` is nonempty after trimming, regardless of whether the Guess is correct. It is `null` when the Question does not have a nonempty tip. It belongs to the most recently submitted Question, not `currentQuestion`.
 
 Expected errors:
 
