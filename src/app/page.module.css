@@ -12,7 +12,7 @@
 }
 
 .header {
-  margin-bottom: 64px;
+  margin-bottom: 46px;
 }
 
 .wordmark {
@@ -44,10 +44,6 @@
   gap: 36px;
 }
 
-.introduction {
-  max-width: 600px;
-}
-
 .eyebrow {
   color: var(--color-accent);
   font-size: 0.75rem;
@@ -66,11 +62,11 @@
 }
 
 .introduction > p:last-child {
-  max-width: 520px;
   margin-top: 14px;
   color: var(--color-text-muted);
   font-size: 1.05rem;
   line-height: 1.65;
+  text-align: justify;
 }
 
 .cards {
@@ -222,10 +218,6 @@
 @media (max-width: 600px) {
   .page {
     padding: 24px 16px 40px;
-  }
-
-  .header {
-    margin-bottom: 46px;
   }
 
   .main {
