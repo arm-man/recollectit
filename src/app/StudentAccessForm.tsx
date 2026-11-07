@@ -175,7 +175,7 @@ export function StudentAccessForm() {
         <div className={styles.introduction}>
           <p className={styles.eyebrow}>Student Access</p>
           <h1>Study what you know. Remember it longer.</h1>
-          <p>Recollect It is a free, interactive learning and study tool designed to help you improve your memory and retain what you&apos;ve learned. Through online flashcards and question-and-answer exercises, you can test your knowledge of a variety of subjects, including world and U.S. capitals, literature, famous artists, foreign language vocabulary, or topics you create yourself. Unlike traditional flashcard apps, Recollect It gives you control over your learning experience. Customize which questions appear in each study session and develop your own memory-training strategy using techniques such as spaced repetition or the Leitner System. Practice at your own pace, review your answers, and strengthen your knowledge through active recall and repeated practice—proven techniques for improving long-term retention. Make learning a lifelong habit with Recollect It.</p>
+          <p>Recollect It is a free, interactive study tool that helps you retain what you&apos;ve learned. Practice with online flashcards, test your knowledge, and create your own study topics. Explore subjects such as world capitals, literature, and foreign languages, or customize your study sessions to focus on what matters most to you. Develop your own memory-training strategy using techniques such as spaced repetition or the Leitner System. Practice at your own pace, strengthen your knowledge, and make learning a lifelong habit with Recollect It.</p>
         </div>
 
         <div className={styles.cards}>
