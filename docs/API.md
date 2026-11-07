@@ -74,7 +74,7 @@ Set the cookie name to `recollect_student`.
 
 The cookie will store the Student ID directly.
 
-The cookie lifetime is 30 days.
+The cookie lifetime is 365 days.
 
 ### Identifiers
 

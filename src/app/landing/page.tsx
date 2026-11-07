@@ -37,7 +37,6 @@ export default async function LandingPage() {
 
       <main className={styles.main}>
         <div className={styles.introduction}>
-          <p className={styles.eyebrow}>Landing Page</p>
           <h1>
             Welcome, <span>{student.username}</span>
           </h1>

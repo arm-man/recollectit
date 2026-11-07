@@ -5,7 +5,7 @@ import { cookies } from "next/headers";
 import { findStudentById, type Student } from "@/server/student-db";
 
 const CURRENT_STUDENT_COOKIE = "recollect_student";
-const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
+const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
 const POSITIVE_INTEGER_PATTERN = /^[1-9]\d*$/;
 
 export async function getCurrentStudent(): Promise<Student | null> {
