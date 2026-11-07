@@ -10,6 +10,7 @@ type CompletedSessionItem = {
   subjectId: number;
   subject: string;
   categories: string[];
+  includesAllCategories: boolean;
   completedAt: string;
   isAbandoned: boolean;
   sessionAccuracy: number | null;
@@ -96,7 +97,9 @@ export function CompletedSessions({ sessions }: CompletedSessionsProps) {
                   <h3>{session.subject}</h3>
                   {session.categories.length > 0 ? (
                     <p className={styles.sessionCategories}>
-                      {session.categories.join(", ")}
+                      {session.includesAllCategories
+                        ? "All Categories"
+                        : session.categories.join(", ")}
                     </p>
                   ) : null}
                   <p className={styles.sessionDate}>

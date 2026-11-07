@@ -68,6 +68,7 @@ type HistoricalSessionRow = {
   subject_id: number;
   subject_title: string;
   categories: string[];
+  includes_all_categories: boolean;
   completed_at: Date;
   is_abandoned: boolean;
   session_accuracy: number | null;
@@ -180,6 +181,7 @@ export type HistoricalSession = {
   subjectId: number;
   subject: string;
   categories: string[];
+  includesAllCategories: boolean;
   completedAt: string;
   isAbandoned: boolean;
   sessionAccuracy: number | null;
@@ -374,7 +376,13 @@ export async function getHistoricalSessions(
          ARRAY_AGG(DISTINCT categories.title ORDER BY categories.title)
            FILTER (WHERE categories.id IS NOT NULL),
          ARRAY[]::text[]
-       ) AS categories
+       ) AS categories,
+       COUNT(DISTINCT categories.id) > 0
+         AND COUNT(DISTINCT categories.id) = (
+           SELECT COUNT(*)
+           FROM categories AS subject_categories
+           WHERE subject_categories.subject_id = sessions.subject_id
+         ) AS includes_all_categories
      FROM sessions
      JOIN subjects ON subjects.id = sessions.subject_id
      JOIN session_questions ON session_questions.session_id = sessions.id
@@ -392,6 +400,7 @@ export async function getHistoricalSessions(
     subjectId: row.subject_id,
     subject: row.subject_title,
     categories: row.categories,
+    includesAllCategories: row.includes_all_categories,
     completedAt: row.completed_at.toISOString(),
     isAbandoned: row.is_abandoned,
     sessionAccuracy: row.session_accuracy,

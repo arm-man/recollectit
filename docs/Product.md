@@ -96,6 +96,7 @@ Primary product success measure: students study regularly.
     - Abandoning a Session marks the Session as completed. The Session is retained in history along with its accumulated Attempt counts and their effect on Question Accuracy. Individual Guesses are not retained.    
   - A section that lists historical Sessions, in order of most recently completed first.
     - For each historical Session, show the Subject, Categories (if applicable), completion date, and Session Accuracy.
+    - If the Session contains Questions from every Category currently defined for its Subject, show **All Categories** instead of listing Category names. A Subject without Categories has no Category label.
     - If a historical Session was abandoned, show an "Abandoned" label instead of Session Accuracy.
     - The historical Session is click-able, and when clicked, direct them to the Session Complete page.
     - If there are no historical Sessions, this section will simply show a note saying "No completed sessions.".
