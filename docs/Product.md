@@ -23,7 +23,6 @@ Primary product success measure: students study regularly.
 - **Session**: a fixed set of Questions from one Subject that continues until every Question has been answered correctly.
 - **Question Accuracy**: for a Student, `Correct Attempts / Total Attempts`.
 - **Round**: a period during which every Question that was incomplete when the Round began must receive one Attempt.
-- **#FutureRelease**: indicates that a requirement may change in a future release; this is for notation only and does not affect the current requirements.
 
 ## Student Access
 
@@ -36,7 +35,7 @@ Primary product success measure: students study regularly.
 - Usernames may not contain whitespace, control characters, or invisible formatting characters.
 - Usernames are normalized using Unicode NFC before storage and comparison.
 - After NFC normalization, usernames are compared exactly.
-- No password is required. #FutureRelease
+- No password is required.
 - During log in, if the Username does not exist, an error is shown.
 - During account creation, if the Username already exists, an error is shown.
 
@@ -55,7 +54,7 @@ Primary product success measure: students study regularly.
 - Answers may contain substitution tokens. The stored token is expanded for Guess evaluation and replaced with its preferred value before an Answer is displayed; raw supported tokens are never shown to Students.
 - Each Question is globally active or inactive. Inactive Questions remain stored but are excluded when selecting Questions for new Sessions. Changing a Question's activation does not alter existing Sessions that already include it.
 - Subjects and Categories are global/shared. There is no such thing as private Subject/Questions for a specific Student.
-- Creating or editing Subjects, Questions, Answers, etc. will not be available to Students. #FutureRelease
+- Creating or editing Subjects, Questions, Answers, etc. will not be available to Students.
 - In the initial release, only the Administrator can create, edit, or delete Subjects, Categories, Questions, and Answers, and only the Administrator can activate or deactivate Questions. Question activation is managed directly through SQL; administrative functionality is not available through the Student interface.
 
 - Example 1:

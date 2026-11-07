@@ -74,7 +74,7 @@ Set the cookie name to `recollect_student`.
 
 The cookie will store the Student ID directly.
 
-The cookie lifetime is 365 days.
+The cookie lifetime is 365 days. Each request to a Student page or Session API with an existing, well-formed current-Student cookie resets its expiration to 365 days from that request. The page or API still verifies that the Student exists before granting access. Logging out deletes the cookie.
 
 ### Identifiers
 
