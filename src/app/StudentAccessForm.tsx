@@ -175,7 +175,7 @@ export function StudentAccessForm() {
         <div className={styles.introduction}>
           <p className={styles.eyebrow}>Student Access</p>
           <h1>Study what you know. Remember it longer.</h1>
-          <p>Continue where you left off or choose a username to begin.</p>
+          <p>Recollect It is a free, interactive learning and study tool designed to help you improve your memory and retain what you&apos;ve learned. Through online flashcards and question-and-answer exercises, you can test your knowledge of a variety of subjects, including world and U.S. capitals, literature, famous artists, foreign language vocabulary, or topics you create yourself. Unlike traditional flashcard apps, Recollect It gives you control over your learning experience. Customize which questions appear in each study session and develop your own memory-training strategy using techniques such as spaced repetition or the Leitner System. Practice at your own pace, review your answers, and strengthen your knowledge through active recall and repeated practice—proven techniques for improving long-term retention. Make learning a lifelong habit with Recollect It.</p>
         </div>
 
         <div className={styles.cards}>
@@ -184,8 +184,7 @@ export function StudentAccessForm() {
             aria-labelledby="login-heading"
           >
             <div className={styles.cardHeading}>
-              <p className={styles.cardLabel}>Returning student</p>
-              <h2 id="login-heading">Log In</h2>
+              <h2 id="login-heading" className={styles.cardLabel}>Returning Student</h2>
               <p>Enter your case-sensitive username to continue.</p>
             </div>
 
@@ -196,11 +195,12 @@ export function StudentAccessForm() {
               aria-busy={isLoggingIn}
             >
               <div className={styles.field}>
-                <label htmlFor="login-username">Username</label>
+                <label className={styles.visuallyHidden} htmlFor="login-username">Username</label>
                 <input
                   id="login-username"
                   name="loginUsername"
                   type="text"
+                  placeholder="Username"
                   autoComplete="username"
                   autoCapitalize="none"
                   spellCheck={false}
@@ -246,11 +246,10 @@ export function StudentAccessForm() {
             aria-labelledby="create-heading"
           >
             <div className={styles.cardHeading}>
-              <p className={styles.cardLabel}>New student</p>
-              <h2 id="create-heading">Create User</h2>
+              <h2 id="create-heading" className={styles.cardLabel}>New Student</h2>
               <p>
                 To get started, choose a unique, case-sensitive username. For
-                example, &apos;Wade&apos; is an excellent choice.
+                example, &apos;Fred&apos;.
               </p>
             </div>
 
@@ -261,11 +260,12 @@ export function StudentAccessForm() {
               aria-busy={isCreatingStudent}
             >
               <div className={styles.field}>
-                <label htmlFor="create-username">Username</label>
+                <label className={styles.visuallyHidden} htmlFor="create-username">Username</label>
                 <input
                   id="create-username"
                   name="createUsername"
                   type="text"
+                  placeholder="Username"
                   autoComplete="username"
                   autoCapitalize="none"
                   spellCheck={false}

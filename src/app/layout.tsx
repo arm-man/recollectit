@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Recollect It",
-  description: "A friendly, focused flashcard application.",
+  description: "Recollect It is a free online flashcard and study tool. Improve memory through active recall, customizable study sessions, and spaced repetition.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
